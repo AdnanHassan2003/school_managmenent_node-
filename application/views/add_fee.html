@@ -1,0 +1,353 @@
+<% include header.html %>
+  <!-- Main content -->
+  <link rel="stylesheet" href="css/bootstrap-multiselect.css" type="text/css">
+  <script type="text/javascript" src="js/bootstrap-multiselect.js"></script>
+
+  <section class="content">
+    <% if (typeof msg !='undefined' ) { %>
+      <div class="alert alert-success alert-dismissible fade show" style="text-align: center;" role="alert">
+        <strong>
+          <%= msg %>
+        </strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <% } %>
+
+        <% if(typeof fee_data !='undefined' ){ %>
+          <form class="form-data" role="form" method="post" action="/update_fee_detail"
+            enctype="multipart/form-data">
+            <div class="row">
+              <input type="hidden" name="fee_id" value="<%= fee_data._id %>" />
+              <div class="col-md-8">
+                <div class="card card-primary">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                    Edit Payment
+                    </h3>
+
+                    <div class="card-tools">
+                      <button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip"
+                        title="Collapse">
+                        <i class="fas fa-minus"></i></button>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <input type="hidden" class="form-control" value="<%= fee_data.picture %>" name="picture" />
+                    <div class="form-group">
+                      <div class="row">
+                        <div class="col-md-3">
+                        </div>
+                       
+                        <div class="col-md-3">
+                        </div>
+                      </div>
+
+                     
+                    </div>
+
+                    <div class="form-group" name =  "student">
+                      <label for="student">
+                        Student
+                      </label>
+                      <select class="form-control custom-select"  id="student_id" name="student_id" required>
+                        <option value=""> All</option>
+                        <% if(Student.length > 0){  %>
+                        
+                          <% Student.forEach(function(data){%>
+              
+  
+                            <%if(student_id == data._id){%>
+                              
+                              <option value="<%=data._id%>"  selected><%=data.name%></option>
+                              
+                            <%}else{%>
+                              <option value="<%=data._id%>"  ><%=data.name%></option>
+                            <%}%>
+                           
+                             
+                      <%})%>
+                      <%}%>
+                      </select>
+                    </div>
+
+                    <div class="form-group" name =  "class">
+                      <label for="class">
+                        Class
+                      </label>
+                      <select class="form-control custom-select"  id="class_id" name="class_id" required>
+                        <option value=""> All</option>
+                        <% if(Class.length > 0){  %>
+                        
+                          <% Class.forEach(function(data){%>
+                            
+  
+                            <%if(class_id == data._id){%>
+                              
+                              <option value="<%=data._id%>"  selected><%=data.name%></option>
+                              
+                            <%}else{%>
+                              <option value="<%=data._id%>"  ><%=data.name%></option>
+                            <%}%>
+                           
+                             
+                      <%})%>
+                      <%}%>
+                      </select>
+                    </div>
+                   
+                    <div class="form-group">
+                      <label for="payment">
+                        Payment
+                      </label>
+                      <input type="text" id="payment" name="payment" class="form-control" value="<%=fee_data.payment %>"
+                        onkeypress="return isNumberKey(event);" required>
+                    </div>                    
+                    <div class="form-group" name="status">
+                      <label for="status">
+                        <%=process.env.title_status %>
+                      </label>
+                      <select class="form-control custom-select" id="status" name="status" required>
+                        <% if(fee_data.status=="1" ) { %>
+                          <option value="1" selected="selected">
+                            <%= process.env.active %>
+                          </option>
+                          <option value="0">
+                            <%= process.env.inactive %>
+                          </option>
+                          <% } else{ %>
+                            <option value="1">
+                              <%= process.env.active %>
+                            </option>
+                            <option value="0" selected="selected">
+                              <%= process.env.inactive %>
+                            </option>
+                            <% } %>
+                      </select>
+                    </div>
+                    
+                   
+                                  
+                    <div class="form-group">
+                      <label for="extra_detail">
+                        <%= process.env.extra_detail %>
+                      </label>
+                      <textarea id="extra_detail" name="extra_detail" class="form-control"
+                        rows="4"><%= fee_data.extra_detail %></textarea>
+                    </div>
+                  </div>
+                  <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+                <div class="col-12">
+                  <input type="submit" value="<%= process.env.edit_admin %>" class="btn system-bottons float-right">
+                </div>
+              </div>
+
+            </div>
+
+          </form>
+          <% }else{ %>
+            <form class="form-data" role="form" method="post" action="/save_fee_data"
+              enctype="multipart/form-data">
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="card card-primary">
+                    <div class="card-header">
+                      <h3 class="card-title">
+                        Add Payment
+                      </h3>
+
+                      <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip"
+                          title="Collapse">
+                          <i class="fas fa-minus"></i></button>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <input type="hidden" class="form-control" name="picture" />
+                     
+                      
+                      <div class="form-group">
+                        <label for="status">
+                          Student
+                        </label>
+                        <select class="form-control custom-select" id="student_id" name="student_id" required  onchange="select_student(this.value, 1, '', true)">
+                          <% if(Student_data.length > 0){  %>
+                            <option>Select Student</option>
+                            <% Student_data.forEach(function(data){%>
+                             
+                        <option value="<%=data._id%>"  ><%=data.name%></option>    
+                        <%})%>
+                        <%}%>
+                        </select>
+                      </div>      
+
+
+                      <div class="form-group">
+                        <label for="status">
+                          Class
+                        </label>
+                        <select class="form-control student_date" id="class_id" name="class_id" required>
+                          <% if(Class_data.length > 0){  %>
+                            <option>Select Subject</option>
+                            <% Class_data.forEach(function(date){%>
+                             
+                        <option value="<%=date._id%>"  ><%=date.name%></option>    
+                        <%})%>
+                        <%}%>
+                        </select>
+                      </div>                                    
+                     
+
+                      <div class="form-group">
+                        <label for="payment">
+                          Payment
+                        </label>
+                        <input type="text" id="payment" name="payment" class="form-control"
+                          onkeypress="return isNumberKey(event);" required>
+                      </div> 
+                      
+                     
+                      <div class="form-group">
+                        <label for="extra_detail">
+                          <%= process.env.extra_detail %>
+                        </label>
+                        <textarea id="extra_detail" name="extra_detail" class="form-control" rows="4"></textarea>
+                      </div>
+                    </div>
+                    <!-- /.card-body -->
+                  </div>
+                  <!-- /.card -->
+                  <div class="col-12">
+                    <input type="submit" value="<%= process.env.add_admin %>" class="btn system-bottons float-right">
+                  </div>
+                </div>
+              </div>
+
+              </div>
+            </form>
+            <% } %>
+  </section>
+
+  <script>
+    $(function () {
+      // $('.my-select-box').fSelect({});
+
+      var dateToday = new Date();
+      //Date range picker with time picker
+      $('#passport_expire_date').datepicker({
+        singleDatePicker: true,
+        showDropdowns: true,
+        minDate: dateToday,
+        changeMonth: true,
+        changeYear: true,
+      });
+    });
+
+    document.getElementById("profile_file").onchange = function () {
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        // get loaded data and render thumbnail.
+        document.getElementById("profile_image").src = e.target.result;
+      };
+
+      // read the image file as a data URL.
+      reader.readAsDataURL(this.files[0]);
+    };
+
+
+    $(document).ready(function () {
+      $('#fselectMulti').multiselect({
+        enableFiltering: true,
+        maxHeight: 350,
+        dropRight: false,
+      });
+
+      if ($("#admin_type option:selected").val() == "1") {
+        $("#allowed_urls").css("display", "block");
+      } else {
+        $("#allowed_urls").css("display", "none");
+      }
+
+      $("#admin_type").change(function (e) {
+        if (this.value == 1) {
+          $("#allowed_urls").css("display", "block");
+        } else {
+          $("#allowed_urls").css("display", "none");
+        }
+      });
+
+    });
+
+
+    function isNumberKey(evt) {
+      var charCode = (evt.which) ? evt.which : evt.keyCode;
+      if (charCode != 46 && charCode > 31
+        && (charCode < 48 || charCode > 57))
+        return false;
+
+      return true;
+    }
+
+
+
+
+
+
+  //SELECT TWO DROPDOWN LIST IN JQUERY  
+  function  select_student(student_id){
+    console.log("welcome", student_id   )
+
+    $.ajax({
+        url: "/get_all_classess",
+        dataType: "json",
+        type: "POST",
+        data: {
+        _id: student_id
+        },
+    }).done(function(response) {
+        console.log("response", response)
+        if (response .success) {
+          
+            response.class.forEach((item) => {
+                if (item._id == response.student.class_id) {
+                  console.log("yeeeeeeeeeeeeeeeeeeeees")
+
+                    $("select.student_date").append(
+                        '<option selected = "selected" value="' +
+                            item._id +
+                            '">' +
+                      
+                            item.name +
+                            "</option>"
+                    );
+                } else {
+                    $("select.student_date").append(
+                        '<option value="' +
+                            item._id +
+                            '">' +
+                            item.name + 
+                            "</option>"
+                    );
+                }
+            });
+            
+            
+        }else{
+            console.log("nooooo")
+        }
+    });
+
+
+}
+
+
+
+
+
+  </script>
+  <!-- /.content -->
+  <% include footer.html %>

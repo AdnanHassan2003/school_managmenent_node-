@@ -800,6 +800,7 @@ exports.add_fee = function (req, res) {
 
 // Handle create admin actions
 exports.save_admin_details = function (req, res) {
+    console.log("req.body", req.files)
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             Admin.findOne({ "phone": req.body.phone }).then((admin) => {
@@ -808,6 +809,9 @@ exports.save_admin_details = function (req, res) {
                     req.session.error = "Sorry, There is an admin with this phone, please check the phone";
                     Utils.redirect_login(req, res);
                 } else {
+                    var image_name = ""
+                    var url = "";
+                    var liner = "";
                     // Create a schema
                     var schema = new passwordValidator();
                     schema.is().min(8)                                 // Minimum length 8
@@ -830,10 +834,26 @@ exports.save_admin_details = function (req, res) {
                             password: Bcrypt.hashSync(req.body.password, 10)
                         });
                         if (profile_file != undefined && profile_file.length > 0) {
-                            var image_name = admin._id + Utils.tokenGenerator(4);
-                            var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
-                            Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
-                            admin.picture = url;
+                            // var image_name = admin._id + Utils.tokenGenerator(4);
+                            // var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
+                            // Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
+
+
+                            /// inser images
+                            image_name = Utils.tokenGenerator(29) + '.jpg';
+                            //v
+                            url = "./uploads/admin_profile/" + image_name;
+                            liner = "admin_profile/" + image_name;
+                            // console.log("linear", liner)
+                            // console.log("url", url)
+                            fs.readFile(req.files[0].path, function (err, data) {
+                                fs.writeFile(url, data, 'binary', function (err) { });
+                                fs.unlink(req.files[0].path, function (err, file) {
+                    
+                                });
+                            });
+                            
+                            admin.picture = liner;
                         }
                         admin.save().then((admin) => {
                             req.session.error = "Congrates, Admin was created successfully.........";

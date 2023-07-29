@@ -201,6 +201,7 @@ exports.saveImageAndGetURL_S3 = function (imageID, req, res, id) {
 };
 
 exports.saveImageIntoFolder = function (local_image_path, image_name, name_id) {
+    console.log("saveImageIntoFolder", local_image_path)
     var file_new_path = myUtils.saveImageFolderPath(name_id) + image_name;
     fs.readFile(local_image_path, function (err, data) {
         fs.writeFile(file_new_path, data, 'binary', function (err) {
@@ -218,6 +219,7 @@ exports.saveImageIntoFolder = function (local_image_path, image_name, name_id) {
 };
 
 exports.saveImageFolderPath = function (name_id) {
+    console.log("saveImageFolderPath",name_id)
     return '../uploads/' + myUtils.getImageFolderName(name_id);
 };
 

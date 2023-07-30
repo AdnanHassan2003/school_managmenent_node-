@@ -895,7 +895,7 @@ exports.save_user_data = function (req, res) {
                     // Validate against a password string
                     if (schema.validate(req.body.password)) {
                         var profile_file = req.files;
-                        var name = req.body.name.split(' ').map(w => w[0].toUpperCase() + w.substr(1).toLowerCase()).join(' ');
+                        var name = req.body.name
                         var user = new User({
                             name: name,
                             sequence_id: Utils.get_unique_id(),
@@ -907,10 +907,26 @@ exports.save_user_data = function (req, res) {
                             password: Bcrypt.hashSync(req.body.password, 10)
                         });
                         if (profile_file != undefined && profile_file.length > 0) {
-                            var image_name = user._id + Utils.tokenGenerator(4);
-                            var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
-                            Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
-                            user.picture = url;
+                           // var image_name = user._id + Utils.tokenGenerator(4);
+                           // var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
+                           // Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
+                            
+
+                           /// inser images
+                           image_name = Utils.tokenGenerator(29) + '.jpg';
+                           //v
+                           url = "./uploads/admin_profile/" + image_name;
+                           liner = "admin_profile/" + image_name;
+                           // console.log("linear", liner)
+                           // console.log("url", url)
+                           fs.readFile(req.files[0].path, function (err, data) {
+                               fs.writeFile(url, data, 'binary', function (err) { });
+                               fs.unlink(req.files[0].path, function (err, file) {
+                   
+                               });
+                           });
+                           
+                           user.picture = liner;
                         }
                         user.save().then((admin) => {
                             req.session.error = "Congrates, Admin was created successfully.........";
@@ -966,10 +982,26 @@ exports.save_student_data = function (req, res) {
                             password: Bcrypt.hashSync(req.body.password, 10)
                         });
                         if (profile_file != undefined && profile_file.length > 0) {
-                            var image_name = student._id + Utils.tokenGenerator(4);
-                            var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
-                            Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
-                            student.picture = url;
+                            //var image_name = student._id + Utils.tokenGenerator(4);
+                            //var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
+                           // Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
+                           
+
+                            /// inser images
+                            image_name = Utils.tokenGenerator(29) + '.jpg';
+                            //v
+                            url = "./uploads/admin_profile/" + image_name;
+                            liner = "admin_profile/" + image_name;
+                            // console.log("linear", liner)
+                            // console.log("url", url)
+                            fs.readFile(req.files[0].path, function (err, data) {
+                                fs.writeFile(url, data, 'binary', function (err) { });
+                                fs.unlink(req.files[0].path, function (err, file) {
+                    
+                                });
+                            });
+                            
+                            student.picture = liner;
                         }
                         student.save().then((admin) => {
                             req.session.error = "Congrates, Admin was created successfully.........";

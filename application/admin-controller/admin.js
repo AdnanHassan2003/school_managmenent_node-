@@ -946,7 +946,21 @@ exports.save_user_data = function (req, res) {
 
 
 
-
+exports.get_all_students=function(req,res){
+    Studnet.find({}).then((std)=>{
+        if(std.length>0){
+            res.send({
+                success:true,
+                record:std
+            })
+        }else{
+            res.send({
+                success:false,
+                record:[]
+            })
+        }
+    })
+}
 //  handele create student list
 exports.save_student_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {

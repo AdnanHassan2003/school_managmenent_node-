@@ -110,4 +110,11 @@ module.exports = function (app) {
   app.route('/genetare_admin_excel').post(adminController.genetare_admin_excel);
   app.route('/get_admin_session').post(adminController.get_admin_session);
   app.route('/admn_change_admin_pass').post(adminController.admn_change_admin_pass);
+
+
+
+
+  //// app apis
+  app.route('/get_all_students').get(adminController.get_all_students)
+
 }

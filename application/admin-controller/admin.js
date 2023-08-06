@@ -83,6 +83,26 @@ exports.check_admin_login = function (req, res) {
 };
 
 
+//APP APIS
+
+exports.get_all_students=function(req,res){
+    Studnet.find({}).then((std)=>{
+        if(std.length>0){
+            res.send({
+                success:true,
+                record:std
+            })
+        }else{
+            res.send({
+                success:false,
+                record:[]
+            })
+        }
+    })
+}
+
+
+
 
 exports.list_admin = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
@@ -946,21 +966,11 @@ exports.save_user_data = function (req, res) {
 
 
 
-exports.get_all_students=function(req,res){
-    Studnet.find({}).then((std)=>{
-        if(std.length>0){
-            res.send({
-                success:true,
-                record:std
-            })
-        }else{
-            res.send({
-                success:false,
-                record:[]
-            })
-        }
-    })
-}
+
+
+
+
+
 //  handele create student list
 exports.save_student_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
@@ -1042,49 +1052,24 @@ exports.save_class_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         console.log("body", req.body)
         if (response.success) {
-            Class.findOne({ "phone": req.body.phone }).then((clas) => {
-                console.log("class", clas)
-                if (clas) {
-                    req.session.error = "Sorry, There is an admin with this phone, please check the phone";
-                    Utils.redirect_login(req, res);
-                } else {
-                    // Create a schema
-                    var schema = new passwordValidator();
-                    schema.is().min(8)                                 // Minimum length 8
-                        .is().max(30)                                  // Maximum length 100
-                        .has().lowercase()                             // Must have lowercase letters
-                        .has().digits()                                // Must have at least 2 digits
-                        .has().not().spaces();                         // Blacklist these values
+           
                     // Validate against a password string
-                    if (schema.validate(req.body.password)) {
-                        var profile_file = req.files;
-                        var name = req.body.name.split(' ').map(w => w[0].toUpperCase() + w.substr(1).toLowerCase()).join(' ');
+                   
+                        var name = req.body.name
                         var clas = new Class({
                             name: name,
                             sequence_id: Utils.get_unique_id(),
-                            email: req.body.email,
-                            phone: req.body.phone,
                             status: 1,
-                            extra_detail: req.body.extra_detail,
-                            picture: "",
-                            password: Bcrypt.hashSync(req.body.password, 10)
                         });
-                        if (profile_file != undefined && profile_file.length > 0) {
-                            var image_name = clas._id + Utils.tokenGenerator(4);
-                            var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
-                            Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
-                            clas.picture = url;
-                        }
+                   
                         clas.save().then((admin) => {
                             req.session.error = "Congrates, Admin was created successfully.........";
                             res.redirect("/class_list");
                         });
-                    } else {
-                        req.session.error = "Please use strong password that contains latrers and Digitals";
-                        res.redirect("/add_class")
-                    }
-                }
-            })
+                    
+                
+                
+            
         } else {
             Utils.redirect_login(req, res);
         }

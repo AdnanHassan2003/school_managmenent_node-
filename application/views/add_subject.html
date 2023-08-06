@@ -76,29 +76,7 @@
                             <% } %>
                       </select>
                     </div>
-                    <div class="form-group">
-                      <label for="status">
-                        <%= process.env.title_type %>
-                      </label>
-                      <select class="form-control custom-select" id="admin_type" name="type" required>
-                        <% if(subject_data.type=="1" ) { %>
-                          <option value="1" selected="selected">
-                            <%= process.env.title_subadmin %>
-                          </option>
-                          <option value="0">
-                            <%= process.env.title_admin %>
-                          </option>
-                          <% } else{ %>
-                            <option value="1">
-                              <%= process.env.title_subadmin %>
-                            </option>
-                            <option value="0" selected="selected">
-                              <%= process.env.title_admin %>
-                            </option>
-                            <% } %>
-                      </select>
-                    </div>
-                  
+                   
                                   
                     <div class="form-group">
                       <label for="extra_detail">
@@ -160,7 +138,7 @@
                   </div>
                   <!-- /.card -->
                   <div class="col-12">
-                    <input type="submit" value="<%= process.env.add_admin %>" class="btn system-bottons float-right">
+                    <input type="submit" value="Add Subject" class="btn system-bottons float-right">
                   </div>
                 </div>
               </div>

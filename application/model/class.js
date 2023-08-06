@@ -14,39 +14,17 @@ classschema = new Schema({
         type: String,
         required: true
     },
-    email: {
-        type: String,
-    },
-    user_name: {
-        type: String,
-    },
-    phone: {
-        type: String,
-        unique: true,
-        trim: true,
-        required: true
-    },
-    password: String,
+   
+   
+   
     status: {
         type: Number,
         default: 0
     },
-    token: {
-        type: String,
-    },
-    last_login: {
-        type: Date,
-        default: null
-    },
-    extra_detail: {
-        type: String,
-    },
-    type: {
-        type: Number,
-        default: 0
-    },
-    allowed_urls: { type: Array, default: [] },
-    picture: String,
+    
+   
+   
+   
     create_date: {
         type: Date,
         default: Date.now
@@ -54,12 +32,8 @@ classschema = new Schema({
 });
 
 
-classschema.index({ email: 1 }, { background: true });
-classschema.index({ phone: 1 }, { background: true });
+
 classschema.index({ create_date: 1 }, { background: true });
 
-//Create a Schema method to compare password 
-classschema.methods.comparePassword = function (passwords) {
-    return bcrypt.compareSync(passwords, this.password);
-}
+
 module.exports = mongoose.model('class', classschema);

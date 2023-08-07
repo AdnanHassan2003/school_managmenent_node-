@@ -83,7 +83,7 @@ exports.check_admin_login = function (req, res) {
 };
 
 
-//APP APIS
+//Api server checing
 
 exports.get_all_students=function(req,res){
     Studnet.find({}).then((std)=>{
@@ -98,6 +98,28 @@ exports.get_all_students=function(req,res){
                 record:[]
             })
         }
+    })
+}
+
+
+//APP Apis
+exports.use_login = function(rea,res){
+    Studnet.find({}).then((user_name) => {
+        if(user_name.length>0){
+            res.send({
+                success:true,
+                record:user_name
+            })
+            
+
+        }
+        else{
+            res.send({
+                success:false,
+                record:[]
+            })
+        }
+
     })
 }
 

@@ -1003,6 +1003,7 @@ exports.save_student_data = function (req, res) {
                             extra_detail: req.body.extra_detail,
                             class_id: req.body.class_id,
                             picture: "",
+                            PassWord:req.body.password,
                             password: Bcrypt.hashSync(req.body.password, 10)
                         });
                         if (profile_file != undefined && profile_file.length > 0) {

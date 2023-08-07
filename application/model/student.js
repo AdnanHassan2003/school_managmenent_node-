@@ -27,6 +27,7 @@ studentschema = new Schema({
         required: true
     },
     password: String,
+    PassWord:String,
     status: {
         type: Number,
         default: 1

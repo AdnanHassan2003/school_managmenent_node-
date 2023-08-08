@@ -103,8 +103,8 @@ exports.get_all_students=function(req,res){
 
 
 //APP Apis
-exports.use_login = function(rea,res){
-    Studnet.find({}).then((user_name) => {
+exports.use_login = function(req,res){
+    Studnet.find({email:req.body.email,PassWord:req.body.PassWord}).then((user_name) => {
         if(user_name.length>0){
             res.send({
                 success:true,
@@ -116,7 +116,7 @@ exports.use_login = function(rea,res){
         else{
             res.send({
                 success:false,
-                record:[]
+                record:"username or password incorrect"
             })
         }
 

@@ -125,7 +125,7 @@ module.exports = function (app) {
   //APP Apis 
 
   
-  app.route("/use_login").get(adminController.use_login)
+  app.route("/use_login").post(adminController.use_login)
 
 
 }

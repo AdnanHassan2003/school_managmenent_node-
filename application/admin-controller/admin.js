@@ -1025,6 +1025,7 @@ exports.save_student_data = function (req, res) {
                             extra_detail: req.body.extra_detail,
                             class_id: req.body.class_id,
                             picture: "",
+                            user_name: req.body.user_name,
                             PassWord:req.body.password,
                             password: Bcrypt.hashSync(req.body.password, 10)
                         });

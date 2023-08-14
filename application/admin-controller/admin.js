@@ -1074,7 +1074,7 @@ exports.save_student_data = function (req, res) {
 //  handele create class list
 exports.save_class_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
-        console.log("body", req.body)
+        console.log("hhhhhh", req.body)
         if (response.success) {
            
                     // Validate against a password string
@@ -1083,7 +1083,7 @@ exports.save_class_data = function (req, res) {
                         var clas = new Class({
                             name: name,
                             sequence_id: Utils.get_unique_id(),
-                            status: 1,
+                            status: 1
                         });
                    
                         clas.save().then((admin) => {

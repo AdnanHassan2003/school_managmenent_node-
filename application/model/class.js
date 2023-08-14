@@ -16,7 +16,6 @@ classschema = new Schema({
     },
    
    
-   
     status: {
         type: Number,
         default: 0

@@ -17,6 +17,7 @@ const { filter } = require('lodash');
 const { title } = require('process')
 const session = require('express-session')
 const { response } = require('express')
+const { type } = require('os')
 // const { utils } = require('xlsx/types')
 var ObjectId = require('mongodb').ObjectID;
 
@@ -83,8 +84,7 @@ exports.check_admin_login = function (req, res) {
 };
 
 
-//Api server checing
-
+//Api for pretical 
 exports.get_all_students=function(req,res){
     Studnet.find({}).then((std)=>{
         if(std.length>0){
@@ -102,7 +102,7 @@ exports.get_all_students=function(req,res){
 }
 
 
-//APP Apis
+//APP Apis Login
 exports.use_login = function(req,res){
     Studnet.find({email:req.body.email,PassWord:req.body.PassWord}).then((user_name) => {
         if(user_name.length>0){
@@ -120,6 +120,27 @@ exports.use_login = function(req,res){
             })
         }
 
+    })
+}
+
+
+
+//APP Apis Exam Result
+exports.exam_result = function(req,res){
+    Exam.find({student_id: req.body.student_id}).then((exam_result)=>{
+        if(exam_result.length>0){
+            res.send({
+                success:true,
+                record:exam_result
+            })
+
+        }
+        else{
+            res.send({
+                success:false,
+                record:[]
+            })
+        }
     })
 }
 

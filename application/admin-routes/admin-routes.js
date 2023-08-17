@@ -115,17 +115,19 @@ module.exports = function (app) {
 
 
 
-  //// app api
-  // api server checing117
-  app.route('/get_all_students').post(adminController.get_all_students)
-  // api server checing
-//  app.route('/get_all_students').post(adminController.get_all_students)
-
-
-  //APP Apis 
-
   
+  //Api for pretical 
+  app.route('/get_all_students').post(adminController.get_all_students)
+
+
+
+  //APP Apis Login
   app.route("/use_login").post(adminController.use_login)
+
+
+
+  //APP Apis Exam Result
+  app.route("/exam_result").post(adminController.exam_result)
 
 
 }

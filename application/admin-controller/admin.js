@@ -127,22 +127,50 @@ exports.use_login = function(req,res){
 
 //APP Apis Exam Result
 exports.exam_result = function(req,res){
-    Exam.find({student_id: req.body.student_id}).then((exam_result)=>{
-        if(exam_result.length>0){
-            res.send({
-                success:true,
-                record:exam_result
-            })
+    console.log("request", req,body)
+   
+            Exam.aggregate([
+              
+                    {
+                        $match: {
+                        "student_id" : ObjectId(req.body.student_id)
+                        }},
+                        {
+                    $lookup: {
+                        
+                           from: "subjects",
+                           localField: "subject_id",
+                           foreignField: "_id",
+                           as: "class_data"
+                         
+                        }},
+                        
+                        {$unwind: "$class_data"},
+                        
+                        
+                        {$project:{
+                            _id:0,
+                            subject:"$class_data.name",
+                            marks:1
+                            }}
+                
+                ]).then((data)=>{
+                    if(data.length>0){
+                        res.send({
+                            success:true,
+                            record:data
+                        })
+                    }else{
+                        res.send({
+                            success:false,
+                            record:[]
+                        })
+                    }
+                })
+        
+           
 
-        }
-        else{
-            res.send({
-                success:false,
-                record:[]
-            })
-        }
-    })
-}
+            }
 
 
 

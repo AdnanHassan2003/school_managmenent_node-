@@ -20,7 +20,7 @@ examschema = new Schema({
     },
    
     marks: {
-        type: String,
+        type: Number,
         unique: false,
         trim: true,
         required: true

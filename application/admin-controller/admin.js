@@ -128,6 +128,7 @@ exports.use_login = function(req,res){
 //APP Apis Exam Result
 exports.exam_result = function(req,res){
     console.log("request", req,body)
+
    
             Exam.aggregate([
               
@@ -155,20 +156,49 @@ exports.exam_result = function(req,res){
                             }}
                 
                 ]).then((data)=>{
-                    if(data.length>0){
-                        res.send({
-                            success:true,
-                            record:data
+                    Exam.aggregate([
+
+                        {$lookup: {
+                              from: "subjects",
+                              localField: "subject_id",
+                              foreignField: "_id",
+                              as: "class_data"
+                            }},
+                            
+                            {$unwind: "$class_data"},
+                            
+                            {$match: {student_id: ObjectId("64d9ffb04115a51ec4a677c0")
+                                }},
+                
+                                {$group:{
+                                 _id: "$_id.marks",
+                                 totalmarks:{$sum: "$marks"}
+                                 }
+                                },
+                                    {$project: {
+                                       _id:0,
+                                        totalmarks:1
+                                        }}
+                        ]).then((totalmarks) =>{
+                            if(data.length>0){
+
+                                res.send({
+                                    success:true,
+                                    record:data,totalmarks
+                                
+                                
+                                })
+                            }else{
+                                res.send({
+                                    success:false,
+                                    record:[]
+                                })
+                            }
                         })
-                    }else{
-                        res.send({
-                            success:false,
-                            record:[]
+                
+                   
                         })
-                    }
-                })
-        
-           
+                   
 
             }
 
@@ -683,7 +713,6 @@ exports.feereport_list = function(req, res){
                           totalStudent:{$sum:1},
                           totalPayment: {$sum: "$payment"} 
                             
-                            
                             }},
                             
                  {$project: {
@@ -691,7 +720,6 @@ exports.feereport_list = function(req, res){
                     class_name:"$_id.class_name",
                     totalPayment: 1,
                     totalStudent:1
-
                      
                      
                      }} ,          

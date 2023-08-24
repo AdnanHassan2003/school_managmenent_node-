@@ -185,7 +185,7 @@ exports.exam_result = function(req,res){
 
                                 res.send({
                                     success:true,
-                                    record:data,
+                                    record:data,totalmarks
                                 
                                 
                                 })

@@ -127,7 +127,7 @@ exports.use_login = function(req,res){
 
 //APP Apis Exam Result
 exports.exam_result = function(req,res){
-    console.log("request", req,body)
+    // console.log("request", req,body)
 
    
             Exam.aggregate([
@@ -167,7 +167,7 @@ exports.exam_result = function(req,res){
                             
                             {$unwind: "$class_data"},
                             
-                            {$match: {student_id: ObjectId("64d9ffb04115a51ec4a677c0")
+                            {$match: {student_id: ObjectId(req.body.student_id)
                                 }},
                 
                                 {$group:{
@@ -185,7 +185,7 @@ exports.exam_result = function(req,res){
 
                                 res.send({
                                     success:true,
-                                    record:data,totalmarks
+                                    record:data,
                                 
                                 
                                 })

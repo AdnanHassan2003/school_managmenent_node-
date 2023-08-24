@@ -174,6 +174,7 @@ exports.exam_result = function(req,res){
                                  _id: "$_id.marks",
                                  totalmarks:{$sum: "$marks"}
                                  }
+                                 
                                 },
                                     {$project: {
                                        _id:0,

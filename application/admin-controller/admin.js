@@ -171,14 +171,16 @@ exports.exam_result = function(req,res){
                                 }},
                 
                                 {$group:{
-                                 _id: "$_id.marks",
-                                 totalmarks:{$sum: "$marks"}
+                                 _id:null,
+                                 totalmarks:{$sum: "$marks"},
+                                 total_sub:{$sum: 1}
                                  }
                                  
                                 },
                                     {$project: {
                                        _id:0,
-                                        totalmarks:1
+                                        totalmarks:1,
+                                        total_sub:1
                                         }}
                         ]).then((totalmarks) =>{
                             if(data.length>0){

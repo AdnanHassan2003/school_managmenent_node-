@@ -109,12 +109,14 @@ exports.get_all_students=function(req,res){
 
 //APP Apis Login
 exports.use_login = function(req,res){
+    console.log("hhhhhhhhhhhhhhhhhh", req.body)
    
   
     Studnet.find({email:req.body.email,PassWord:req.body.PassWord}).then((user_name) => {
         
         if(user_name.length>0){
             Studnet.findOneAndUpdate({email:req.body.email},{$set:{token:req.body.token}}).then((data)=>{
+                console.log("kkkkkkkkkkk", data)
                
 
                 res.send({

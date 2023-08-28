@@ -5,10 +5,13 @@ var Class = require('mongoose').model('class')
 var Subject = require('mongoose').model('subject')
 var Exam = require('mongoose').model('exam')
 var Fee = require('mongoose').model('fee')
+var Message = require('mongoose').model('message')
+var Setting = require('mongoose').model('setting')
 const Bcrypt = require('bcryptjs');
 var moment = require('moment-timezone');
 var Excel = require('exceljs');
 var fs = require('fs');
+var node_gcm=require("node-gcm")
 var Utils = require('../controller/utils');
 var passwordValidator = require('password-validator');
 const { body } = require('express-validator');
@@ -18,6 +21,8 @@ const { title } = require('process')
 const session = require('express-session')
 const { response } = require('express')
 const { type } = require('os')
+const setting = require('../model/setting')
+const { each } = require('async')
 // const { utils } = require('xlsx/types')
 var ObjectId = require('mongodb').ObjectID;
 
@@ -104,12 +109,21 @@ exports.get_all_students=function(req,res){
 
 //APP Apis Login
 exports.use_login = function(req,res){
+   
+  
     Studnet.find({email:req.body.email,PassWord:req.body.PassWord}).then((user_name) => {
+        
         if(user_name.length>0){
-            res.send({
-                success:true,
-                record:user_name
+            Studnet.findOneAndUpdate({email:req.body.email},{$set:{token:req.body.token}}).then((data)=>{
+               
+
+                res.send({
+                    success:true,
+                    record:user_name
+                })
             })
+
+           
             
 
         }
@@ -752,6 +766,33 @@ exports.feereport_list = function(req, res){
 }
 
 
+
+
+
+exports.message_list = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Message.find({}).then((message_Array) => {
+
+
+                res.render('message_list', {
+                    Message: message_Array,
+                    msg: req.session.error,
+                    moment: moment,
+                    admin_type: req.session.admin.usertype
+                });
+            })
+        } else {
+
+            Utils.redirect_login(req, res);
+        }
+    })
+}
+
+
+
+
+
 exports.add_admin = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
@@ -916,6 +957,26 @@ exports.add_fee = function (req, res) {
         }
     });
 };
+
+
+
+
+
+
+
+exports.add_message = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            res.render("add_message",
+                {
+                    systen_urls: systen_urls, msg: req.session.error
+                })
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+};
+
 
 
 
@@ -1274,7 +1335,6 @@ exports.save_fee_data = function (req, res) {
                             class_id: req.body.class_id,
 
                          
-                            
                         });
                       
                         fee.save().then((admin) => {
@@ -1291,6 +1351,56 @@ exports.save_fee_data = function (req, res) {
 };
 
 
+
+
+
+
+
+exports.save_message_data = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        console.log("body", req.body)
+        if (response.success) {
+            Studnet.find({}).then((std)=>{
+                if(std.length>0){
+                    std.forEach(each_std=>{
+                        if(each_std.token){
+                            var data={
+                                "title":req.body.title,
+                                "token":each_std.token,
+                                "message":req.body.message
+                            }
+                            Utils.send_notification(data, function (response) {
+
+
+                            })
+                        }
+
+                    })
+                }
+            })
+           
+        
+                        var title = req.body.title
+                        var message = new Message({
+                            title: title,
+                            message:req.body.message,
+                            sequence_id: Utils.get_unique_id(),
+                            
+                          
+                        });
+                        message.save().then((admin) => {
+                            req.session.error = "Congrates, Admin was created successfully.........";
+                            res.redirect("/message_list");
+                        });
+                   
+                
+        
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+
+};
 
 
 // Handle update admin info
@@ -1974,6 +2084,27 @@ exports.delete_fee = function (req, res) {
 
 
 
+
+
+////  delete message function
+exports.delete_message = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Message.deleteOne({ _id: req.body.message_id }).then((user) => {
+                res.redirect("/message_list")
+            });
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+};
+
+
+
+
+
+
+
 // Handle view admin logout
 exports.log_out = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
@@ -2116,3 +2247,35 @@ exports.admn_change_admin_pass = function (req, res) {
         }
     });
 };
+
+
+
+/// send notificatio
+
+
+
+
+
+
+/// send messages
+exports.send_message=function(req,res){
+    //let message =  Message.findOne({})
+    let firebase_key ="AAAAjib-3fA:APA91bGcXBe6HBl61YYdoVKqFsSin_X5d9A2V5rNi0jSLU-3rnpdTTf9OoeXxpSZ-tnh33kSEFq-0fgoMsCdorSromVh2xQBKiNYvE9FBM5uS5zrOZJdFxcvw67JIxc3bHXZqqa7ln6e"
+    console.log('api', firebase_key)
+    // console.log("firebase_key",firebase_key)
+    const  device_token=req.body.token
+
+    var message1 = new node_gcm.Message();
+    // message1.addData('key', 'Hello');
+    message1.addData('title', "TES");
+    message1.addData('message', req.body.message);
+ 
+    
+    var sender = new node_gcm.Sender(firebase_key);
+    sender.sendNoRetry(message1, { registrationTokens: [device_token] }, function (err, response) {
+        if (err) console.log('err', err);
+        else console.log('res', response);
+});
+}
+
+

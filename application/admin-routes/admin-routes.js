@@ -6,6 +6,16 @@ module.exports = function (app) {
   app.route('/admin').post(adminController.check_admin_login);
   app.route('/admin_list').get(adminController.list_admin);
   app.route('/admin_list').post(adminController.list_admin);
+  app.route('/add_admin').get(adminController.add_admin)
+  app.route('/add_admin').post(adminController.add_admin)
+  app.route('/edit_admin').post(adminController.edit_admin)
+  app.route('/update_admin_details').post(adminController.update_admin_details)
+  app.route('/save_admin_details').post(adminController.save_admin_details)
+  app.route('/delete_admin').post(adminController.delete_admin);
+  app.route('/log_out').get(adminController.log_out);
+  app.route('/genetare_admin_excel').post(adminController.genetare_admin_excel);
+  app.route('/get_admin_session').post(adminController.get_admin_session);
+  app.route('/admn_change_admin_pass').post(adminController.admn_change_admin_pass);
 
 
   app.route('/user_list').get(adminController.user_list);
@@ -99,22 +109,16 @@ module.exports = function (app) {
   
 
 
+
+
+  app.route('/message_list').get(adminController.message_list)
+  app.route('/message_list').post(adminController.message_list)
+  app.route('/add_message').get(adminController.add_message)
+  app.route('/add_message').post(adminController.add_message)
+  app.route('/save_message_data').post(adminController.save_message_data)
+  app.route('/delete_message').post(adminController.delete_message);
   
-  app.route('/add_admin').get(adminController.add_admin)
-  app.route('/add_admin').post(adminController.add_admin)
-  app.route('/edit_admin').post(adminController.edit_admin)
-  app.route('/update_admin_details').post(adminController.update_admin_details)
-  app.route('/save_admin_details').post(adminController.save_admin_details)
-  app.route('/delete_admin').post(adminController.delete_admin);
-  app.route('/log_out').get(adminController.log_out);
-  app.route('/genetare_admin_excel').post(adminController.genetare_admin_excel);
-  app.route('/get_admin_session').post(adminController.get_admin_session);
-  app.route('/admn_change_admin_pass').post(adminController.admn_change_admin_pass);
-
-
-
-
-
+  
   
   //Api for pretical 
   app.route('/get_all_students').post(adminController.get_all_students)
@@ -128,6 +132,16 @@ module.exports = function (app) {
 
   //APP Apis Exam Result
   app.route("/exam_result").post(adminController.exam_result)
+
+
+
+
+
+
+
+
+  //APP Apis Send message
+  app.route("/send_message").post(adminController.send_message)
 
 
 }

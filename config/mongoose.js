@@ -20,6 +20,8 @@ module.exports = function () {
     require("../application/model/subject"); 
     require("../application/model/exam"); 
     require("../application/model/fee"); 
+    require("../application/model/setting");
+    require("../application/model/message");
     
     return db;
 };

@@ -14,6 +14,9 @@ studentschema = new Schema({
         type: String,
         required: true
     },
+    token: {
+        type: String
+    },
     email: {
         type: String,
     },
@@ -39,9 +42,7 @@ studentschema = new Schema({
         
         
     },
-    token: {
-        type: String,
-    },
+    
     class_id: {
         type: Schema.Types.ObjectId,
     },

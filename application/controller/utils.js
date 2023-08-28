@@ -6,8 +6,10 @@ var { customAlphabet } = require("nanoid");
 var moment = require('moment');
 var momentzone = require('moment-timezone');
 var FCM = require('fcm-node');
+var node_gcm=require("node-gcm")
 var nodemailer = require('nodemailer');
 var requestAPI = require('request');
+const cons = require('consolidate');
 //////crypto things end////////////////
 
 //add hours to current timezone
@@ -289,6 +291,37 @@ exports.redirect_login = function (req, res) {
 
 exports.redirect_504 = function (req, res) {
     res.render("504");
+}
+
+
+
+
+/// send notification
+exports.send_notification=function(data, response) {
+    console.log("data", data)
+    // let setting =  Setting.findOne({})
+    let firebase_key ="AAAAjib-3fA:APA91bGcXBe6HBl61YYdoVKqFsSin_X5d9A2V5rNi0jSLU-3rnpdTTf9OoeXxpSZ-tnh33kSEFq-0fgoMsCdorSromVh2xQBKiNYvE9FBM5uS5zrOZJdFxcvw67JIxc3bHXZqqa7ln6e"
+
+    console.log('api', firebase_key)
+    // console.log("firebase_key",firebase_key)
+    const  device_token=data.token
+    const title=data.title
+    const message=data.message
+
+    var message1 = new node_gcm.Message();
+    // message1.addData('key', 'Hello');
+    message1.addData('title', title);
+    message1.addData('message',message);
+ 
+    
+    var sender = new node_gcm.Sender(firebase_key);
+    sender.sendNoRetry(message1, { registrationTokens: [device_token] }, function (err, response) {
+        if (err) console.log('err', err);
+        else console.log('res', response);
+})
+// response.send({
+//     success:true
+// })
 }
 
 exports = systen_urls = [

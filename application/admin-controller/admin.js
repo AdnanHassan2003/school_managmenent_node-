@@ -220,7 +220,7 @@ exports.exam_result = function(req,res){
 
 //Api for messages 
 exports.all_messages=function(req,res){
-    Message.find({}).then((messages)=>{
+    Message.find({token:req.body.token}).then((messages)=>{
         if(messages.length>0){
             res.send({
                 success:true,
@@ -1397,10 +1397,11 @@ exports.save_message_data = function (req, res) {
                 }
             })
            
-        
+
                         var title = req.body.title
                         var message = new Message({
                             title: title,
+                            token:1,
                             message:req.body.message,
                             sequence_id: Utils.get_unique_id(),
                             

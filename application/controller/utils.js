@@ -307,7 +307,6 @@ exports.send_notification=function(data, response) {
     const  device_token=data.token
     const title=data.title
     const message=data.message
-
     var message1 = new node_gcm.Message();
     // message1.addData('key', 'Hello');
     message1.addData('title', title);

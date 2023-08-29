@@ -134,14 +134,9 @@ module.exports = function (app) {
   app.route("/exam_result").post(adminController.exam_result)
 
 
+   //APP Apis all messages
+   app.route("/all_messages").post(adminController.all_messages)
 
-
-
-
-
-
-  //APP Apis Send message
-  app.route("/send_message").post(adminController.send_message)
 
 
 }

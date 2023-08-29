@@ -109,14 +109,12 @@ exports.get_all_students=function(req,res){
 
 //APP Apis Login
 exports.use_login = function(req,res){
-    console.log("hhhhhhhhhhhhhhhhhh", req.body)
    
   
     Studnet.find({email:req.body.email,PassWord:req.body.PassWord}).then((user_name) => {
         
         if(user_name.length>0){
             Studnet.findOneAndUpdate({email:req.body.email},{$set:{token:req.body.token}}).then((data)=>{
-                console.log("kkkkkkkkkkk", data)
                
 
                 res.send({
@@ -124,10 +122,6 @@ exports.use_login = function(req,res){
                     record:user_name
                 })
             })
-
-           
-            
-
         }
         else{
             res.send({
@@ -220,6 +214,28 @@ exports.exam_result = function(req,res){
                    
 
             }
+
+
+
+
+//Api for messages 
+exports.all_messages=function(req,res){
+    Message.find({}).then((messages)=>{
+        if(messages.length>0){
+            res.send({
+                success:true,
+                record:messages
+            })
+        }else{
+            res.send({
+                success:false,
+                record:[]
+            })
+        }
+    })
+}
+
+            
 
 
 
@@ -2252,32 +2268,5 @@ exports.admn_change_admin_pass = function (req, res) {
 
 
 
-/// send notificatio
-
-
-
-
-
-
-/// send messages
-exports.send_message=function(req,res){
-    //let message =  Message.findOne({})
-    let firebase_key ="AAAAjib-3fA:APA91bGcXBe6HBl61YYdoVKqFsSin_X5d9A2V5rNi0jSLU-3rnpdTTf9OoeXxpSZ-tnh33kSEFq-0fgoMsCdorSromVh2xQBKiNYvE9FBM5uS5zrOZJdFxcvw67JIxc3bHXZqqa7ln6e"
-    console.log('api', firebase_key)
-    // console.log("firebase_key",firebase_key)
-    const  device_token=req.body.token
-
-    var message1 = new node_gcm.Message();
-    // message1.addData('key', 'Hello');
-    message1.addData('title', "TES");
-    message1.addData('message', req.body.message);
- 
-    
-    var sender = new node_gcm.Sender(firebase_key);
-    sender.sendNoRetry(message1, { registrationTokens: [device_token] }, function (err, response) {
-        if (err) console.log('err', err);
-        else console.log('res', response);
-});
-}
 
 

@@ -235,6 +235,53 @@ exports.all_messages=function(req,res){
     })
 }
 
+
+
+// exports.change_password = function(req,res){
+//     Studnet.find({}).then((sudent_data)=>{
+//         console.log("yyyyyyy",sudent_data)
+//         if(sudent_data.length>0){
+//             if(sudent_data.PassWord==PassWord.req.body.PassWord){
+//                 Studnet.findByIdAndUpdate({$set:{PassWord:req.body.PassWord}}).then((change_data)=>{
+//                     console.log("hhhhhhhhhhhhhh",change_data)
+//                     res.send({
+//                         success:true,
+//                         record:change_data
+//                        })
+
+//                 })
+//             }
+//             else{
+//                 res.send({
+//                     success:true,
+//                     record:[]
+//                 })
+//             }
+
+//         }
+
+//     })
+// }
+
+
+
+exports.change_password = function(req,res){
+            Studnet.findOneAndUpdate({_id:req.body._id},{$set:{PassWord:req.body.PassWord}}).then((data)=>{
+
+                res.send({
+                    success:true,
+                    record:data
+                })
+            })
+            
+      
+   
+}
+
+
+
+
+
             
 
 

@@ -138,5 +138,5 @@ module.exports = function (app) {
    app.route("/all_messages").post(adminController.all_messages)
 
 
-
+   app.route("/change_password").post(adminController.change_password)
 }

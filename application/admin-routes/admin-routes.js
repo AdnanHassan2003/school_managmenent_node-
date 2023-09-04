@@ -117,6 +117,19 @@ module.exports = function (app) {
   app.route('/add_message').post(adminController.add_message)
   app.route('/save_message_data').post(adminController.save_message_data)
   app.route('/delete_message').post(adminController.delete_message);
+
+
+
+
+
+  app.route('/quiz_list').get(adminController.quiz_list)
+  app.route('/quiz_list').post(adminController.quiz_list)
+  app.route('/add_quiz').get(adminController.add_quiz)
+  app.route('/add_quiz').post(adminController.add_quiz)
+  app.route('/save_quiz_data').post(adminController.save_quiz_data)
+  app.route('/delete_quiz').post(adminController.delete_quiz);
+
+  
   
   
   
@@ -138,5 +151,6 @@ module.exports = function (app) {
    app.route("/all_messages").post(adminController.all_messages)
 
 
+   //APP Apis change password
    app.route("/change_password").post(adminController.change_password)
 }

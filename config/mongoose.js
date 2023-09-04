@@ -22,6 +22,7 @@ module.exports = function () {
     require("../application/model/fee"); 
     require("../application/model/setting");
     require("../application/model/message");
+    require("../application/model/quiz");
     
     return db;
 };

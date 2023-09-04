@@ -6,6 +6,7 @@ var Subject = require('mongoose').model('subject')
 var Exam = require('mongoose').model('exam')
 var Fee = require('mongoose').model('fee')
 var Message = require('mongoose').model('message')
+var Quiz = require('mongoose').model('quiz')
 var Setting = require('mongoose').model('setting')
 const Bcrypt = require('bcryptjs');
 var moment = require('moment-timezone');
@@ -23,6 +24,7 @@ const { response } = require('express')
 const { type } = require('os')
 const setting = require('../model/setting')
 const { each } = require('async')
+const { utils } = require('xlsx')
 // const { utils } = require('xlsx/types')
 var ObjectId = require('mongodb').ObjectID;
 
@@ -831,6 +833,61 @@ exports.message_list = function (req, res) {
 
 
 
+exports.quiz_list = function(req,res){
+    Utils.check_admin_token(req.session.admin,function(response){
+        if(response.success){
+          Class.find({}).then((class_data)=>{
+
+                Quiz.aggregate([
+              {      
+                    $lookup:{
+                        from:"classes",
+                        localField:"class_id",
+                        foreignField:"_id",
+                        as:"data"
+                       
+                        }},
+                        
+                        {$unwind:"$data"},
+                        
+                        {$project:{
+                            _id: 1,
+                            sequence_id:1,
+                            quetion:1,
+                            answer1:1,
+                            answer2:1,
+                            answer3:1,
+                            correct:1,
+                            class_name:"$data.name",
+                            create_date: 1
+                            
+                            
+                            
+                            }}
+                        
+                ]).then((quiz_Array)=>{
+
+            res.render('quiz_list',{
+                Quiz:quiz_Array,
+                msg:req.session.error,
+                class_name:class_data,
+                moment:moment,
+                admin_type:req.session.admin.usertype
+            });
+        })
+    });
+        }
+        else{
+            Utils.redirect_login(req,res);
+        }
+    })
+}
+
+
+
+
+
+
 exports.add_admin = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
@@ -1015,6 +1072,26 @@ exports.add_message = function (req, res) {
     });
 };
 
+
+
+exports.add_quiz = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Class.find({}).then((class_data)=>{
+
+          
+            res.render("add_quiz",
+                {
+                    systen_urls: systen_urls, msg: req.session.error,
+                    Class_data:class_data
+                })
+            })
+                
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+};
 
 
 
@@ -1439,6 +1516,47 @@ exports.save_message_data = function (req, res) {
     });
 
 };
+
+
+
+
+
+
+
+exports.save_quiz_data = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        console.log("body", req.body)
+        if (response.success) {
+          
+      
+                        var quetion = req.body.quetion
+                        var quiz = new Quiz({
+                            
+                            sequence_id: Utils.get_unique_id(),
+                            quetion: quetion,
+                            answer1:req.body.answer1,
+                            answer2:req.body.answer2,
+                            answer3:req.body.answer3,
+                            correct:req.body.correct,
+                            class_id: req.body.class_id,
+
+                         
+                        });
+                      
+                        quiz.save().then((admin) => {
+                            req.session.error = "Congrates, Admin was created successfully.........";
+                            res.redirect("/quiz_list");
+                        });
+        }
+           
+         else {
+            Utils.redirect_login(req, res);
+        }
+    });
+
+};
+
+
 
 
 // Handle update admin info
@@ -2037,7 +2155,7 @@ exports.delete_admin = function (req, res) {
 exports.delete_user = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
-            User.deleteOne({ _id: req.body.user_id }).then((user) => {//
+            User.deleteOne({ _id: req.body.user_id }).then((user) => {
                 res.redirect("/user_list")
             });
         } else {
@@ -2138,6 +2256,20 @@ exports.delete_message = function (req, res) {
 };
 
 
+
+
+////  delete quiz function
+exports.delete_quiz = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Quiz.deleteOne({ _id: req.body.quiz_id}).exec().then((user) => {
+                res.redirect("/quiz_list")
+            });
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+};
 
 
 

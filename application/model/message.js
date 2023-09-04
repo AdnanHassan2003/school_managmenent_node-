@@ -30,7 +30,7 @@ messageschema = new Schema({
 
 
 
-examschema.index({ create_date: 1 }, { background: true });
+messageschema.index({ create_date: 1 }, { background: true });
 
 //Create a Schema method to compare password 
 

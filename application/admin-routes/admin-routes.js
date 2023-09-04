@@ -153,4 +153,9 @@ module.exports = function (app) {
 
    //APP Apis change password
    app.route("/change_password").post(adminController.change_password)
+
+
+
+    //APP Apis quiz
+    app.route("/read_quiz").post(adminController.read_quiz)
 }

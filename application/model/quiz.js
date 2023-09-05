@@ -31,8 +31,8 @@ quizschema = new Schema({
     },
     //help by grouping
     
-    class_id: {
-        type: Schema.Types.ObjectId,
+    class_id: { type: Schema.Types.ObjectId,
+       
         
     },
 

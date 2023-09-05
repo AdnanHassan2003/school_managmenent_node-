@@ -286,6 +286,7 @@ exports.save_result_quiz = function (req, res) {
                             
                             sequence_id: Utils.get_unique_id(),
                             name: name,
+                            student_id:req.body.student_id,
                             correct:req.body.correct,
                             wrong:req.body.wrong,
 

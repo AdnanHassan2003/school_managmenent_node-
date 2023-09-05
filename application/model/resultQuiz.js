@@ -25,6 +25,9 @@ resultQuizschema = new Schema({
         trim: true,
         required: true
     },
+    student_id:{
+        type: Schema.Types.ObjectId,
+    },
 
     create_date: {
         type: Date,

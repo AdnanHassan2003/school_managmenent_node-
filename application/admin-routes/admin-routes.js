@@ -129,6 +129,14 @@ module.exports = function (app) {
   app.route('/save_quiz_data').post(adminController.save_quiz_data)
   app.route('/delete_quiz').post(adminController.delete_quiz);
 
+
+
+
+
+  app.route('/resultQuiz_list').get(adminController.resultQuiz_list)
+  app.route('/resultQuiz_list').post(adminController.resultQuiz_list)
+  
+
   
   
   
@@ -158,4 +166,10 @@ module.exports = function (app) {
 
     //APP Apis quiz
     app.route("/read_quiz").post(adminController.read_quiz)
+
+
+
+
+    //APP Apis result quiz
+    app.route("/save_result_quiz").post(adminController.save_result_quiz)
 }

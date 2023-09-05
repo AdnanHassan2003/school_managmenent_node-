@@ -23,6 +23,7 @@ module.exports = function () {
     require("../application/model/setting");
     require("../application/model/message");
     require("../application/model/quiz");
+    require("../application/model/resultQuiz");
     
     return db;
 };

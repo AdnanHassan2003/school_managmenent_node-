@@ -7,6 +7,7 @@ var Exam = require('mongoose').model('exam')
 var Fee = require('mongoose').model('fee')
 var Message = require('mongoose').model('message')
 var Quiz = require('mongoose').model('quiz')
+var Result_Quiz = require('mongoose').model('resultQuiz')
 var Setting = require('mongoose').model('setting')
 const Bcrypt = require('bcryptjs');
 var moment = require('moment-timezone');
@@ -255,7 +256,7 @@ exports.change_password = function(req,res){
 
 
 
-//Api for messages 
+//Api for read quiz 
 exports.read_quiz =function(req,res){
     Quiz.find({}).then((quiz)=>{
         if(quiz.length>0){
@@ -272,6 +273,44 @@ exports.read_quiz =function(req,res){
     })
 }
             
+
+
+
+
+
+//Api for save result quiz  
+exports.save_result_quiz = function (req, res) {
+      console.log("ggggggg",req.body)
+                        var name = req.body.name
+                        var resultquiz = new Result_Quiz({
+                            
+                            sequence_id: Utils.get_unique_id(),
+                            name: name,
+                            correct:req.body.correct,
+                            wrong:req.body.wrong,
+
+                        });
+                      
+                        resultquiz.save().then((result) => {
+
+                            if(result.length>0){
+                                res.send({
+                                    success:true,
+                                    record:result
+                                })
+                            }
+
+                            else{
+                                res.send({
+                                    success:false,
+                                    record:[]
+                                })
+                            }
+                           
+                        });
+    
+
+};
 
 
 
@@ -899,6 +938,27 @@ exports.quiz_list = function(req,res){
 
 
 
+
+
+exports.resultQuiz_list = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Result_Quiz.find({}).then((result) => {
+
+
+                res.render('resultQuiz_list', {
+                    ResultQuiz: result,
+                    msg: req.session.error,
+                    moment: moment,
+                    admin_type: req.session.admin.usertype
+                });
+            })
+        } else {
+
+            Utils.redirect_login(req, res);
+        }
+    })
+}
 
 
 

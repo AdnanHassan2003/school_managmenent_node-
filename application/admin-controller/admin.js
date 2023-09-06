@@ -289,6 +289,7 @@ exports.save_result_quiz = function (req, res) {
                             student_id:req.body.student_id,
                             correct:req.body.correct,
                             wrong:req.body.wrong,
+                            marks:req.body.marks,
 
                         });
                       

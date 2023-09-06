@@ -912,6 +912,7 @@ exports.quiz_list = function(req,res){
                             answer2:1,
                             answer3:1,
                             correct:1,
+                            marks:1,
                             class_name:"$data.name",
                             create_date: 1
                             
@@ -1613,6 +1614,7 @@ exports.save_quiz_data = function (req, res) {
                             answer2:req.body.answer2,
                             answer3:req.body.answer3,
                             correct:req.body.correct,
+                            marks:req.body.marks,
                             class_id: req.body.class_id,
 
                          

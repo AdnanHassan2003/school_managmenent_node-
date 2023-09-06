@@ -29,6 +29,13 @@ quizschema = new Schema({
         trim: true,
         required: true
     },
+    marks:{
+        type: Number,
+        unique: false,
+        trim: true,
+        required: true
+    },
+    
     //help by grouping
     
     class_id: { type: Schema.Types.ObjectId,

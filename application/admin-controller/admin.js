@@ -278,45 +278,10 @@ exports.change_password = function(req,res){
 
 
 
-// exports.read_quiz =function(req,res){
-//     Quiz.find({}).then((quiz)=>{
-//     Types_Quiz.find({}).then((Typequiz)=>{
-//             if(quiz.length>0){
-//                 if(Typequiz.length>0){
-//                     Typequiz.forEach((datatype)=>{
-//                         if( datatype.status == 1){
-
-//               res.send({
-//                     success:true,
-//                     record:quiz
-//                 })
-//             }
-//         })
-//     }
-            
-//             }else{
-//                 res.send({
-//                     success:false,
-//                     record:[]
-//                 })
-//             }
-//     })
-//     })
-// }
-
-
-
-
 exports.read_quiz =function(req,res){
     Quiz.find({}).then((quiz)=>{
     Types_Quiz.find({}).then((Typequiz)=>{
-        Result_Quiz.find({}).then((Resultquiz)=>{
-
             if(quiz.length>0){
-                if(Resultquiz.length>0){
-                  Resultquiz.forEach((dataquiz)=>{
-                    if(!dataquiz.student_id.equals(student_id=req.body.student_id)){
-             
                 if(Typequiz.length>0){
                     Typequiz.forEach((datatype)=>{
                         if( datatype.status == 1){
@@ -328,10 +293,6 @@ exports.read_quiz =function(req,res){
             }
         })
     }
-}
-})
-
-    }
             
             }else{
                 res.send({
@@ -339,11 +300,50 @@ exports.read_quiz =function(req,res){
                     record:[]
                 })
             }
-        })
     })
-})
-
+    })
 }
+
+
+
+
+// exports.read_quiz =function(req,res){
+//     Quiz.find({}).then((quiz)=>{
+//     Types_Quiz.find({}).then((Typequiz)=>{
+//         Result_Quiz.find({}).then((Resultquiz)=>{
+
+//             if(quiz.length>0){
+//                 if(Resultquiz.length>0){
+//                   Resultquiz.forEach((dataquiz)=>{
+//                     if(!dataquiz.student_id.equals(student_id=req.body.student_id)){
+             
+//                 if(Typequiz.length>0){
+//                     Typequiz.forEach((datatype)=>{
+//                         if( datatype.status == 1){
+
+//               res.send({
+//                     success:true,
+//                     record:quiz
+//                 })
+//             }
+//         })
+//     }
+// }
+// })
+
+//     }
+            
+//             }else{
+//                 res.send({
+//                     success:false,
+//                     record:[]
+//                 })
+//             }
+//         })
+//     })
+// })
+
+// }
 
 
 

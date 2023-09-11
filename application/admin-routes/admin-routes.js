@@ -138,6 +138,21 @@ module.exports = function (app) {
   
 
   
+
+
+
+  app.route('/typequiz_list').get(adminController.typequiz_list)
+  app.route('/typequiz_list').post(adminController.typequiz_list)
+  app.route('/add_typequiz').get(adminController.add_typequiz)
+  app.route('/add_typequiz').post(adminController.add_typequiz)
+  app.route('/save_typequiz_data').post(adminController.save_typequiz_data)
+  app.route('/edit_typequiz').post(adminController.edit_typequiz)
+  app.route('/update_typequiz_details').post(adminController.update_typequiz_details)
+  app.route('/delete_typequiz').post(adminController.delete_typequiz);
+  
+  
+  
+  
   
   
   

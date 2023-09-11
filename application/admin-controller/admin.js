@@ -8,6 +8,7 @@ var Fee = require('mongoose').model('fee')
 var Message = require('mongoose').model('message')
 var Quiz = require('mongoose').model('quiz')
 var Result_Quiz = require('mongoose').model('resultQuiz')
+var Types_Quiz = require('mongoose').model('typequiz')
 var Setting = require('mongoose').model('setting')
 const Bcrypt = require('bcryptjs');
 var moment = require('moment-timezone');
@@ -257,21 +258,100 @@ exports.change_password = function(req,res){
 
 
 //Api for read quiz 
+// exports.read_quiz =function(req,res){
+//     Quiz.find({}).then((quiz)=>{
+//         if(quiz.length>0){
+//             res.send({
+//                 success:true,
+//                 record:quiz
+//             })
+//         }else{
+//             res.send({
+//                 success:false,
+//                 record:[]
+//             })
+//         }
+//     })
+// }
+
+
+
+
+
+// exports.read_quiz =function(req,res){
+//     Quiz.find({}).then((quiz)=>{
+//     Types_Quiz.find({}).then((Typequiz)=>{
+//             if(quiz.length>0){
+//                 if(Typequiz.length>0){
+//                     Typequiz.forEach((datatype)=>{
+//                         if( datatype.status == 1){
+
+//               res.send({
+//                     success:true,
+//                     record:quiz
+//                 })
+//             }
+//         })
+//     }
+            
+//             }else{
+//                 res.send({
+//                     success:false,
+//                     record:[]
+//                 })
+//             }
+//     })
+//     })
+// }
+
+
+
+
 exports.read_quiz =function(req,res){
     Quiz.find({}).then((quiz)=>{
-        if(quiz.length>0){
-            res.send({
-                success:true,
-                record:quiz
-            })
-        }else{
-            res.send({
-                success:false,
-                record:[]
-            })
-        }
-    })
+    Types_Quiz.find({}).then((Typequiz)=>{
+        Result_Quiz.find({}).then((Resultquiz)=>{
+
+            if(quiz.length>0){
+                if(Resultquiz.length>0){
+                  Resultquiz.forEach((dataquiz)=>{
+                    if(!dataquiz.student_id.equals(student_id=req.body.student_id)){
+             
+                if(Typequiz.length>0){
+                    Typequiz.forEach((datatype)=>{
+                        if( datatype.status == 1){
+
+              res.send({
+                    success:true,
+                    record:quiz
+                })
+            }
+        })
+    }
 }
+})
+
+    }
+            
+            }else{
+                res.send({
+                    success:false,
+                    record:[]
+                })
+            }
+        })
+    })
+})
+
+}
+
+
+
+
+
+
+
+
             
 
 
@@ -891,13 +971,13 @@ exports.message_list = function (req, res) {
 exports.quiz_list = function(req,res){
     Utils.check_admin_token(req.session.admin,function(response){
         if(response.success){
-          Class.find({}).then((class_data)=>{
+          Types_Quiz.find({}).then((quiz_data)=>{
 
                 Quiz.aggregate([
               {      
                     $lookup:{
-                        from:"classes",
-                        localField:"class_id",
+                        from:"typequizzes",
+                        localField:"quiz_id",
                         foreignField:"_id",
                         as:"data"
                        
@@ -914,7 +994,7 @@ exports.quiz_list = function(req,res){
                             answer3:1,
                             correct:1,
                             marks:1,
-                            class_name:"$data.name",
+                            quiz_name:"$data.name",
                             create_date: 1
                             
                             
@@ -926,7 +1006,7 @@ exports.quiz_list = function(req,res){
             res.render('quiz_list',{
                 Quiz:quiz_Array,
                 msg:req.session.error,
-                class_name:class_data,
+                quiz_data:quiz_data,
                 moment:moment,
                 admin_type:req.session.admin.usertype
             });
@@ -962,6 +1042,81 @@ exports.resultQuiz_list = function (req, res) {
         }
     })
 }
+
+
+
+
+
+
+
+
+exports.typequiz_list = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Class.find({}).then((class_data) => {
+                Subject.find({}).then((subject_data)=>{
+
+                
+
+                Types_Quiz.aggregate([
+
+
+                    {$lookup:{
+                        from:"classes",
+                        localField:"class_id",
+                        foreignField:"_id",
+                        as:"data"
+                        
+                        
+                        }},
+                        
+                        {$unwind:"$data"},
+
+                        {$lookup:{
+                            from:"subjects",
+                            localField:"subject_id",
+                            foreignField:"_id",
+                            as:"Data"
+                            
+                            
+                            }},
+                            
+                            {$unwind:"$Data"},
+                        
+                        {$project:{
+                            _id:1,
+                            sequence_id:1,
+                            name:1,
+                            status:1,
+                            class_name:"$data.name",
+                            subject_name:"$Data.name",
+                            create_date: 1
+                            
+                            
+                            }}
+                    
+                    ]).then((all_data)=>{
+
+                    
+
+                res.render('typequiz_list', {
+                    typequiz: all_data,
+                    msg: req.session.error,
+                    moment: moment,
+                    class_data:class_data,
+                    subject_data:subject_data,
+                    admin_type: req.session.admin.usertype
+                });
+            })
+            })
+        })
+        } else {
+
+            Utils.redirect_login(req, res);
+        }
+    })
+}
+
 
 
 
@@ -1151,16 +1306,17 @@ exports.add_message = function (req, res) {
 
 
 
+
 exports.add_quiz = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
-            Class.find({}).then((class_data)=>{
+            Types_Quiz.find({}).then((quiz)=>{
 
           
             res.render("add_quiz",
                 {
                     systen_urls: systen_urls, msg: req.session.error,
-                    Class_data:class_data
+                    Quiz_data:quiz
                 })
             })
                 
@@ -1169,6 +1325,32 @@ exports.add_quiz = function (req, res) {
         }
     });
 };
+
+
+
+
+
+exports.add_typequiz = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Subject.find({}).then((subject_data)=>{
+                Class.find({}).then((class_data)=>{
+
+             
+            res.render("add_typequiz",
+                {
+                    systen_urls: systen_urls, msg: req.session.error,
+                    Subject_data:subject_data,
+                    Class_data:class_data
+                })
+            })
+        })
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+}
+
 
 
 
@@ -1616,7 +1798,7 @@ exports.save_quiz_data = function (req, res) {
                             answer3:req.body.answer3,
                             correct:req.body.correct,
                             marks:req.body.marks,
-                            class_id: req.body.class_id,
+                            quiz_id: req.body.quiz_id,
 
                          
                         });
@@ -1624,6 +1806,44 @@ exports.save_quiz_data = function (req, res) {
                         quiz.save().then((admin) => {
                             req.session.error = "Congrates, Admin was created successfully.........";
                             res.redirect("/quiz_list");
+                        });
+        }
+           
+         else {
+            Utils.redirect_login(req, res);
+        }
+    });
+
+};
+
+
+
+
+
+
+
+
+exports.save_typequiz_data = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        console.log("ggg",req.body);
+        if (response.success) {
+          
+      
+                        var name = req.body.name
+                        var typequiz = new Types_Quiz({
+                            
+                            sequence_id: Utils.get_unique_id(),
+                            name: name,
+                            class_id:req.body.class_id,
+                            subject_id:req.body.subject_id,
+                            status: 1,
+
+                         
+                        });
+                      
+                        typequiz.save().then((admin) => {
+                            req.session.error = "Congrates, Admin was created successfully.........";
+                            res.redirect("/typequiz_list");
                         });
         }
            
@@ -1812,6 +2032,35 @@ exports.edit_fee = function (req, res) {
 
 
 
+
+
+
+
+
+//// handle edit typequiz info
+exports.edit_typequiz = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Types_Quiz.findOne({ _id: req.body.typequiz_id }, { password: 0 }).then((type) => {
+                Class.find({}).then((Class)=>{
+                    Subject.find({}).then((Subject)=>{
+
+                
+
+                if (type) {
+                    // console.log(admin)
+                    res.render("add_typequiz", { typequiz_data:type ,Class:Class,class_id:type.class_id.toString(), Subject:Subject,subject_id:type.subject_id.toString(), systen_urls: systen_urls })
+                } else {
+                    res.redirect("/typequiz_list")
+                }
+            })
+        })
+            });
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+};
 
 
 
@@ -2203,6 +2452,55 @@ exports.update_fee_detail = function (req, res) {
 
 
 
+
+/// handle update exam info
+exports.update_typequiz_details = function (req, res) {
+    
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            var profile_file = req.files;
+            // req.body.name = req.body.name.split(' ').map(w => w[0].toUpperCase() + w.substr(1).toLowerCase()).join(' ');
+            if (profile_file == '' || profile_file == 'undefined') {
+                Types_Quiz.findByIdAndUpdate(req.body.typequiz_id, req.body, { useFindAndModify: false }).then((type) => {
+                
+                    if (type._id.equals(req.session.admin.typequiz_id)) {
+                        Utils.redirect_login(req, res);
+                    } else {
+                        res.redirect("/typequiz_list");
+                    }
+                }, (err) => {
+                    res.redirect("/typequiz_list");
+                });
+            } else {
+                Types_Quiz.findById(req.body.typequiz_id).then((student) => {
+                    if (user.picture) {
+                        Utils.deleteImageFromFolderTosaveNewOne(user.picture, 1);
+                    }
+                    var image_name = user._id + Utils.tokenGenerator(4);
+                    var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
+                    Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
+                    req.body.picture = url;
+                    // req.body.passport_expire_date = moment(req.body.passport_expire_date).format("MMM Do YYYY");
+                    Types_Quiz.findByIdAndUpdate(req.body.typequiz_id, req.body, { useFindAndModify: false }).then((type) => {
+                        if (type._id.equals(req.session.admin.typequiz_id)) {
+                            Utils.redirect_login(req, res);
+                        } else {
+                            res.redirect("/typequiz_list");
+                        }
+                    }, (err) => {
+                        res.redirect("/typequiz_list");
+                    });
+                });
+            }
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+};
+
+
+
+
 // Handle delete admin
 exports.delete_admin = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
@@ -2350,6 +2648,22 @@ exports.delete_quiz = function (req, res) {
 };
 
 
+
+
+
+
+////  delete typequiz function
+exports.delete_typequiz = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Types_Quiz.deleteOne({ _id: req.body.typequiz_id}).exec().then((user) => {
+                res.redirect("/typequiz_list")
+            });
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+};
 
 
 

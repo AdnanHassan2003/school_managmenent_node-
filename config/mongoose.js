@@ -24,6 +24,7 @@ module.exports = function () {
     require("../application/model/message");
     require("../application/model/quiz");
     require("../application/model/resultQuiz");
+    require("../application/model/typequiz");
     
     return db;
 };

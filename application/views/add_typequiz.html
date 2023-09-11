@@ -15,18 +15,18 @@
       </div>
       <% } %>
 
-        <% if(typeof student_data !='undefined' ){ %>
-          <form class="form-data" role="form" method="post" action="/update_student_details"
+        <% if(typeof typequiz_data !='undefined' ){ %>
+          <form class="form-data" role="form" method="post" action="/update_typequiz_details"
             enctype="multipart/form-data">
             <div class="row">
-              <input type="hidden" name="student_id" value="<%= student_data._id %>" />
+              <input type="hidden" name="typequiz_id" value="<%= typequiz_data._id %>" />
               <div class="col-md-8">
                 <div class="card card-primary">
                   <div class="card-header">
                     <h3 class="card-title">
-                     Edit Quiz
+                     Edit Type Quiz
                     </h3>
-
+                    
                     <div class="card-tools">
                       <button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip"
                         title="Collapse">
@@ -34,92 +34,75 @@
                     </div>
                   </div>
                   <div class="card-body">
-                    <input type="hidden" class="form-control" value="<%= student_data.picture %>" name="picture" />
-                    <div class="form-group">
-                      <div class="row">
-                        <div class="col-md-3">
-                        </div>
-                        <div class="col-md-6">
-                          <img class="profile-user-img img-fluid img-circle" style="width: 250px; height: 250px;"
-                            src="<%= student_data.picture != '' ? student_data.picture : 'default.png' %>"
-                            alt="User profile picture" id="profile_image">
-                        </div>
-                        <div class="col-md-3">
-                        </div>
-                      </div>
-
-                      <div class="row col-md-4 float-right" style="margin-bottom: 10px;">
-                        <input type="button" id="loadFileXml" value="Select Profile Image" style="border-radius:12px;border-width:2px;padding:2px 10px; background:transparent;
-                  color:#656d78;" onclick="document.getElementById('profile_file').click();" />
-                        <input type="file" style="display:none;  " id="profile_file" name="profile_file" />
-                      </div>
-                    </div>
-
+                    <input type="hidden" class="form-control" value="<%= typequiz_data.picture %>" name="picture" />
 
                     <div class="form-group">
                       <label for="name">
                         <%= process.env.title_name %>
                       </label>
                       <input type="text" id="name" name="name" style="text-transform: capitalize;" class="form-control"
-                        value="<%= student_data.name %>"  required >
+                        value="<%= typequiz_data.name %>"  required >
                     </div>
 
-
-
-
-
-                    <!-- <div class="col-md-12"> -->
-                      <div class="form-group" name =  "class">
-                        <label for="class">
-                          Class
-                        </label>
-                        <select class="form-control custom-select"  id="class_id" name="class_id" required>
-                          <option value=""> All</option>
-                          <% if(Class.length > 0){  %>
-                          
-                            <% Class.forEach(function(data){%>
+                    <div class="form-group" name =  "class">
+                      <label for="class">
+                        Class
+                      </label>
+                      <select class="form-control custom-select"  id="class_id" name="class_id" required>
+                        <option value=""> All</option>
+                        <% if(Class.length > 0){  %>
+                        
+                          <% Class.forEach(function(data){%>
+              
+  
+                            <%if(class_id == data._id){%>
                               
-    
-                              <%if(class_id == data._id){%>
-                                
-                                <option value="<%=data._id%>"  selected><%=data.name%></option>
-                                
-                              <%}else{%>
-                                <option value="<%=data._id%>"  ><%=data.name%></option>
-                              <%}%>
+                              <option value="<%=data._id%>"  selected><%=data.name%></option>
+                              
+                            <%}else{%>
+                              <option value="<%=data._id%>"  ><%=data.name%></option>
+                            <%}%>
+                           
                              
-                               
-                        <%})%>
-                        <%}%>
-                        </select>
-                      </div>
-                      <!-- </div> -->
-
-
-    
-                    <div class="form-group">
-                      <label for="phone">
-                        <%= process.env.phone %>
-                      </label>
-                      <input type="text" id="phone" name="phone" class="form-control" value="<%= student_data.phone %>"
-                        onkeypress="return isNumberKey(event);" required>
-                    </div>  
-
-                    <div class="form-group">
-                      <label for="email">
-                        <%= process.env.email %>
-                      </label>
-                      <input type="email" id="email" name="email" class="form-control" value="<%= student_data.email %>"
-                        required>
+                      <%})%>
+                      <%}%>
+                      </select>
                     </div>
 
+                    <div class="form-group" name =  "student">
+                      <label for="student">
+                        Subject
+                      </label>
+                      <select class="form-control custom-select"  id="subject_id" name="subject_id" required>
+                        <option value=""> All</option>
+                        <% if(Subject.length > 0){  %>
+                        
+                          <% Subject.forEach(function(data){%>
+              
+  
+                            <%if(subject_id == data._id){%>
+                              
+                              <option value="<%=data._id%>"  selected><%=data.name%></option>
+                              
+                            <%}else{%>
+                              <option value="<%=data._id%>"  ><%=data.name%></option>
+                            <%}%>
+                           
+                             
+                      <%})%>
+                      <%}%>
+                      </select>
+                    </div>
+                    <!-- <div class="col-md-12"> -->
+                     
+                      <!-- </div> -->
 
                     <div class="form-group" name="status">
                       <label for="status">
                         <%=process.env.title_status %>
                       </label>
                       <select class="form-control custom-select" id="status" name="status" required>
-                        <% if(student_data.status=="1" ) { %>
+                        <% if(typequiz_data.status=="1" ) { %>
                           <option value="1" selected="selected">
                             <%= process.env.active %>
                           </option>
@@ -143,7 +126,7 @@
                         <%= process.env.title_type %>
                       </label>
                       <select class="form-control custom-select" id="admin_type" name="type" required>
-                        <% if(student_data.type=="1" ) { %>
+                        <% if(typequiz_data.type=="1" ) { %>
                           <option value="1" selected="selected">
                             <%= process.env.title_subadmin %>
                           </option>
@@ -161,41 +144,12 @@
                       </select>
                     </div>
 
-
-                    <div class="form-group" id="allowed_urls">
-                      <label for="status">
-                        <%= process.env.allowed_urls %>
-                      </label>
-                      <div class="col-12">
-                        <select id="fselectMulti" class="my-select-box" style="overflow-y:scroll" name="allowed_urls[]"
-                          multiple="multiple">
-                          <optgroup label="URL List">
-                            <% systen_urls.forEach(function(menu){ %>
-                              <% if(student_data.allowed_urls.indexOf(menu) !==-1){ %>
-                                <option value="<%= menu %>" selected>
-                                  <%= menu %>
-                                </option>
-                                <% } else{ %>
-                                  <option value="<%= menu %>">
-                                    <%= menu %>
-                                  </option>
-                                  <% } %>
-                                    <% }) %>
-                          </optgroup>
-                        </select>
-                      </div>
-                    </div>
-
-
-                  
-  
-                    
                     <div class="form-group">
                       <label for="extra_detail">
                         <%= process.env.extra_detail %>
                       </label>
                       <textarea id="extra_detail" name="extra_detail" class="form-control"
-                        rows="4"><%= student_data.extra_detail %></textarea>
+                        rows="4"><%= typequiz_data.extra_detail %></textarea>
                     </div>
 
 
@@ -212,14 +166,14 @@
 
           </form>
           <% }else{ %>
-            <form class="form-data" role="form" method="post" action="/save_quiz_data"
+            <form class="form-data" role="form" method="post" action="/save_typequiz_data"
               enctype="multipart/form-data">
               <div class="row">
                 <div class="col-md-8">
                   <div class="card card-primary">
                     <div class="card-header">
                       <h3 class="card-title">
-                        Add Quiz
+                        Add Type Quiz
                       </h3>
 
                       <div class="card-tools">
@@ -230,60 +184,23 @@
                     </div>
                     <div class="card-body">
                       <input type="hidden" class="form-control" name="picture" />
-        
-
-                 
+                     
+                     
                       <div class="form-group">
-                        <label for="quetion">
-                          Quetion
+                        <label for="name">
+                          <%= process.env.title_name %>
                         </label>
-                        <input type="text" id="quetion" name="quetion" style="text-transform: capitalize;"
+                        <input type="text" id="name" name="name" style="text-transform: capitalize;"
                           class="form-control" required>
                       </div>
-                      <div class="form-group">
-                        <label for="answer1">
-                          Answer1
-                        </label>
-                        <input type="text" id="answer1" name="answer1" style="text-transform: capitalize;"
-                          class="form-control" required>
-                      </div>
-                    
-                      <div class="form-group">
-                        <label for="answer2">
-                          Answer2
-                        </label>
-                        <input type="text" id="answer2" name="answer2" style="text-transform: capitalize;"
-                         class="form-control" required>
-                      </div>     
-                      <div class="form-group">
-                        <label for="answer3">
-                          Answer3
-                        </label>
-                        <input type="text" id="answer3" name="answer3" style="text-transform: capitalize;"
-                        class="form-control" required>
-                      </div> 
-                      <div class="form-group">
-                        <label for="correct">
-                          Correct
-                        </label>
-                        <input type="text" id="correct" name="correct" class="form-control"
-                          onkeypress="return isNumberKey(event);" required>
-                      </div> 
-                      <div class="form-group">
-                        <label for="marks">
-                          Marks
-                        </label>
-                        <input type="text" id="marks" name="marks" class="form-control"
-                          onkeypress="return isNumberKey(event);" required>
-                      </div>                                              
                       <div class="form-group">
                         <label for="status">
-                          TypeQuiz
+                          Class
                         </label>
-                        <select class="form-control custom-select" id="quiz_id" name="quiz_id" required>
-                          <% if(Quiz_data.length > 0){  %>
-                            <option>Seelect quiz</option>
-                            <% Quiz_data.forEach(function(data){%>
+                        <select class="form-control custom-select" id="class_id" name="class_id" required>
+                          <% if(Class_data.length > 0){  %>
+                            <option>Seelect class</option>
+                            <% Class_data.forEach(function(data){%>
                              
                         <option value="<%=data._id%>"  ><%=data.name%></option>
 
@@ -292,7 +209,24 @@
                         <%}%>
                         </select>
                       </div>
-                                    
+
+                      <div class="form-group">
+                        <label for="status">
+                          Subject
+                        </label>
+                        <select class="form-control custom-select" id="subject_id" name="subject_id" required>
+                          <% if(Subject_data.length > 0){  %>
+                            <option>Seelect class</option>
+                            <% Subject_data.forEach(function(data){%>
+                             
+                        <option value="<%=data._id%>"  ><%=data.name%></option>
+
+                               
+                        <%})%>
+                        <%}%>
+                        </select>
+                      </div>
+               
                       <div class="form-group">
                         <label for="extra_detail">
                           <%= process.env.extra_detail %>
@@ -304,7 +238,7 @@
                   </div>
                   <!-- /.card -->
                   <div class="col-12">
-                    <input type="submit" value="Add Quiz" class="btn system-bottons float-right">
+                    <input type="submit" value="Add Type Quiz" class="btn system-bottons float-right">
                   </div>
                 </div>
               </div>

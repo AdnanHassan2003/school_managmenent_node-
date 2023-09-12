@@ -257,25 +257,6 @@ exports.change_password = function(req,res){
 
 
 
-//Api for read quiz 
-// exports.read_quiz =function(req,res){
-//     Quiz.find({}).then((quiz)=>{
-//         if(quiz.length>0){
-//             res.send({
-//                 success:true,
-//                 record:quiz
-//             })
-//         }else{
-//             res.send({
-//                 success:false,
-//                 record:[]
-//             })
-//         }
-//     })
-// }
-
-
-
 
 
 exports.read_quiz =function(req,res){
@@ -344,17 +325,6 @@ exports.read_quiz =function(req,res){
 // })
 
 // }
-
-
-
-
-
-
-
-
-            
-
-
 
 
 

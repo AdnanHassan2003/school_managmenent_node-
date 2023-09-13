@@ -298,7 +298,7 @@ exports.read_quiz =function(req,res){
                         if( datatype.status == 1){
                 if(Resultquiz.length>0){
                   Resultquiz.forEach((dataquiz)=>{
-                    if(!dataquiz.student_id.equals(student_id=req.body.student_id)){
+                    if(dataquiz.student_id != {student_id:req.body.student_id}){
 
               res.send({
                     success:true,

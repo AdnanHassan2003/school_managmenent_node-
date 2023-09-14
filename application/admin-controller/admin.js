@@ -327,11 +327,11 @@ exports.read_quiz =function(req,res){
             
         
         ]).then((data)=>{
-            Result_Quiz.find({quiz_id:req.body.quiz_id,class_id:req.body.class_id,subject_id:req.body.subject_id,student_id:req.body.student_id}).then((Rquiz)=>{
+           // Result_Quiz.find({quiz_id:req.body.quiz_id,class_id:req.body.class_id,subject_id:req.body.subject_id,student_id:req.body.student_id}).then((Rquiz)=>{
 
             //   if(Rquiz.length==0){
 
-            if(data.length>0,Rquiz.length==0){
+            if(data.length>0){
                 res.send({
                    success:true,
                    record:data 
@@ -345,7 +345,7 @@ exports.read_quiz =function(req,res){
                 })
             }
         
-        })
+       // })
     })
 }
 

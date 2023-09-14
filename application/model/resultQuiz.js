@@ -34,6 +34,15 @@ resultQuizschema = new Schema({
     student_id:{
         type: Schema.Types.ObjectId,
     },
+    quiz_id:{
+        type: Schema.Types.ObjectId,
+    },
+    class_id:{
+        type: Schema.Types.ObjectId,
+    },
+    subject_id:{
+        type: Schema.Types.ObjectId,
+    },
 
     create_date: {
         type: Date,

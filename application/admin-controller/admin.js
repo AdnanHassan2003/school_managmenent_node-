@@ -259,68 +259,29 @@ exports.change_password = function(req,res){
 
 
 
-exports.read_quiz =function(req,res){
-    Quiz.find({}).then((quiz)=>{
-    Types_Quiz.find({}).then((Typequiz)=>{
-            if(quiz.length>0){
-                if(Typequiz.length>0){
-                    Typequiz.forEach((datatype)=>{
-                        if( datatype.status == 1){
-
-              res.send({
-                    success:true,
-                    record:quiz
-                })
-            }
-        })
-    }
-            }else{
-                res.send({
-                    success:false,
-                    record:[]
-                })
-            }
-    })
-    })
-}
-
-
-
-
 // exports.read_quiz =function(req,res){
 //     Quiz.find({}).then((quiz)=>{
 //     Types_Quiz.find({}).then((Typequiz)=>{
-//         Result_Quiz.find({}).then((Resultquiz)=>{
-
 //             if(quiz.length>0){
 //                 if(Typequiz.length>0){
 //                     Typequiz.forEach((datatype)=>{
 //                         if( datatype.status == 1){
-//                 if(Resultquiz.length>0){
-//                   Resultquiz.forEach((dataquiz)=>{
-//                     if(dataquiz.student_id != {student_id:req.body.student_id}){
 
 //               res.send({
 //                     success:true,
 //                     record:quiz
 //                 })
-//            }
-//        })
-//      }
-//    }
-// })
-// }
-            
+//             }
+//         })
+//     }
 //             }else{
 //                 res.send({
 //                     success:false,
 //                     record:[]
 //                 })
 //             }
-//         })
 //     })
-// })
-
+//     })
 // }
 
 
@@ -328,9 +289,61 @@ exports.read_quiz =function(req,res){
 
 
 
+exports.read_quiz =function(req,res){
+    Types_Quiz.aggregate([
 
-
+        {$lookup:{
             
+            from:"quizzes",
+            localField:"_id",
+            foreignField:"quiz_id",
+            as:"Datatype"
+            
+            }},
+            
+            {$unwind:"$Datatype"},
+            
+            
+            {$match: {status: 1}},
+            
+            
+            
+            {$project:{
+                _id:0,
+                quetion:"$Datatype.quetion",
+                answer1:"$Datatype.answer1",
+                answer2:"$Datatype.answer2",
+                answer3:"$Datatype.answer3",
+                correct:"$Datatype.correct",
+                marks:"$Datatype.marks",
+                quiz_id:"$Datatype.quiz_id",
+                class_id:1,
+                subject_id:1,
+                status:1,
+                name:1
+                
+                
+                }}
+            
+        
+        ]).then((data)=>{
+            if(data.length>0){
+                res.send({
+                   success:true,
+                   record:data 
+                })
+            }
+            else{
+                res.send({
+                    success:false,
+                    record:[]
+                })
+            }
+        })
+}
+
+
+
 
 
 
@@ -345,6 +358,9 @@ exports.save_result_quiz = function (req, res) {
                             sequence_id: Utils.get_unique_id(),
                             name: name,
                             student_id:req.body.student_id,
+                            quiz_id:req.body.quiz_id,
+                            class_id:req.body.class_id,
+                            subject_id:req.body.subject_id,
                             correct:req.body.correct,
                             wrong:req.body.wrong,
                             marks:req.body.marks,

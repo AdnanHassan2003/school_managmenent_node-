@@ -1053,15 +1053,15 @@ exports.resultQuiz_list = function (req, res) {
                             
                             {$unwind:"$subject_data"},
                         
-                            {$lookup:{
-                                from:"quizzes",
-                                localField:"quiz_id",
-                                foreignField:"_id",
-                                as:"quiz_data"
-                                
-                                }},
-                                
-                                {$unwind:"$quiz_data"},
+                                {$lookup:{
+                                    from:"typequizzes",
+                                    localField:"quiz_id",
+                                    foreignField:"_id",
+                                    as:"quiz_data"
+                                    
+                                    }},
+                                    
+                                    {$unwind:"$quiz_data"},
 
                         {$project:{
                             _id:1,

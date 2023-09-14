@@ -1070,6 +1070,7 @@ exports.resultQuiz_list = function (req, res) {
                             correct:1,
                             wrong:1,
                             marks:1,
+                            create_date:1,
                             Class_name:"$class_data.name",
                             Subject_name:"$subject_data.name",
                             Quiz_name:"$quiz_data.name"

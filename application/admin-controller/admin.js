@@ -327,19 +327,26 @@ exports.read_quiz =function(req,res){
             
         
         ]).then((data)=>{
-            if(data.length>0){
+            Result_Quiz.find({quiz_id:req.body.quiz_id,class_id:req.body.class_id,subject_id:req.body.subject_id,student_id:req.body.student_id}).then((Rquiz)=>{
+
+            //   if(Rquiz.length==0){
+
+            if(data.length>0,Rquiz.length==0){
                 res.send({
                    success:true,
                    record:data 
                 })
-            }
+            // }
+        }
             else{
                 res.send({
                     success:false,
                     record:[]
                 })
             }
+        
         })
+    })
 }
 
 
@@ -1020,15 +1027,67 @@ exports.quiz_list = function(req,res){
 exports.resultQuiz_list = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
-            Result_Quiz.find({}).then((result) => {
+            Class.find({}).then((class_Data) => {
+
+
+                Result_Quiz.aggregate([
+
+                    {$lookup:{
+                        from:"classes",
+                        localField:"class_id",
+                        foreignField:"_id",
+                        as:"class_data"
+                        
+                        }},
+                        
+                        {$unwind:"$class_data"},
+
+
+                        {$lookup:{
+                            from:"subjects",
+                            localField:"subject_id",
+                            foreignField:"_id",
+                            as:"subject_data"
+                            
+                            }},
+                            
+                            {$unwind:"$subject_data"},
+                        
+                            {$lookup:{
+                                from:"quizzes",
+                                localField:"quiz_id",
+                                foreignField:"_id",
+                                as:"quiz_data"
+                                
+                                }},
+                                
+                                {$unwind:"$quiz_data"},
+
+                        {$project:{
+                            _id:1,
+                            sequence_id:1,
+                            name:1,
+                            correct:1,
+                            wrong:1,
+                            marks:1,
+                            Class_name:"$class_data.name",
+                            Subject_name:"$subject_data.name",
+                            Quiz_name:"$quiz_data.name"
+                            
+                            }}
+                    
+                    
+                    ]).then((all_data)=>{
 
 
                 res.render('resultQuiz_list', {
-                    ResultQuiz: result,
+                    ResultQuiz: all_data,
                     msg: req.session.error,
                     moment: moment,
+                    class_Data:class_Data,
                     admin_type: req.session.admin.usertype
                 });
+            })
             })
         } else {
 

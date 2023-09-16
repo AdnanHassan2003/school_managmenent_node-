@@ -187,4 +187,9 @@ module.exports = function (app) {
 
     //APP Apis result quiz
     app.route("/save_result_quiz").post(adminController.save_result_quiz)
+
+
+
+    //APP Apis finence
+    app.route("/blance_fee").post(adminController.blance_fee)
 }

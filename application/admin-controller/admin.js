@@ -19,7 +19,7 @@ var Utils = require('../controller/utils');
 var passwordValidator = require('password-validator');
 const { body } = require('express-validator');
 const _class = require('../model/class');
-const { filter } = require('lodash');
+const { filter, flatMap } = require('lodash');
 const { title } = require('process')
 const session = require('express-session')
 const { response } = require('express')
@@ -258,37 +258,6 @@ exports.change_password = function(req,res){
 
 
 
-
-// exports.read_quiz =function(req,res){
-//     Quiz.find({}).then((quiz)=>{
-//     Types_Quiz.find({}).then((Typequiz)=>{
-//             if(quiz.length>0){
-//                 if(Typequiz.length>0){
-//                     Typequiz.forEach((datatype)=>{
-//                         if( datatype.status == 1){
-
-//               res.send({
-//                     success:true,
-//                     record:quiz
-//                 })
-//             }
-//         })
-//     }
-//             }else{
-//                 res.send({
-//                     success:false,
-//                     record:[]
-//                 })
-//             }
-//     })
-//     })
-// }
-
-
-
-
-
-
 exports.read_quiz =function(req,res){
     Types_Quiz.aggregate([
 
@@ -394,6 +363,33 @@ exports.save_result_quiz = function (req, res) {
     
 
 };
+
+
+
+
+
+//Api for show blance fee
+exports.blance_fee = function(req,res){
+    Fee.find({student_id:req.body.student_id}).then((blance)=>{
+
+        if(blance.length>0){
+            res.send({
+                success:true,
+                record:blance
+            })
+        }
+        else{
+           res.send({
+            success:false,
+            record:[]
+           })
+        }
+
+    })
+}
+
+
+
 
 
 

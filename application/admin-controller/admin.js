@@ -296,16 +296,33 @@ exports.read_quiz =function(req,res){
             
         
         ]).then((data)=>{
-           // Result_Quiz.find({quiz_id:req.body.quiz_id,class_id:req.body.class_id,subject_id:req.body.subject_id,student_id:req.body.student_id}).then((Rquiz)=>{
+
+
+           
 
             //   if(Rquiz.length==0){
 
             if(data.length>0){
+                
+                Result_Quiz.find({quiz_id:data[0].quiz_id,student_id:req.body.student_id}).then((Rquiz)=>{
+                    
+                    if(Rquiz.length==0){
+
+                    
                 res.send({
                    success:true,
                    record:data 
                 })
-            // }
+
+            }else{
+                res.send({
+                    success:false,
+                    record:[]
+                })
+            }
+
+            })
+            
         }
             else{
                 res.send({
@@ -314,7 +331,7 @@ exports.read_quiz =function(req,res){
                 })
             }
         
-       // })
+   
     })
 }
 
@@ -363,7 +380,6 @@ exports.save_result_quiz = function (req, res) {
     
 
 };
-
 
 
 

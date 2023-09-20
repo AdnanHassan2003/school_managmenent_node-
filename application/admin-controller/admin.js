@@ -409,7 +409,6 @@ exports.blance_fee = function(req,res){
 
 
 
-
 exports.list_admin = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {

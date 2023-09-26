@@ -1,5 +1,199 @@
-<% include header.html %>      
+<% include header.html %>
 
-<% include footer.html %>
+
+<script>
+    function timeSince(date) {
+      date = new Date(date);
+      var seconds = Math.floor((new Date() - date) / 1000);
+
+      var interval = seconds / 31536000;
+
+      if (interval > 1) {
+        return Math.floor(interval) + " year(s) ago";
+      }
+      interval = seconds / 2592000;
+      if (interval > 1) {
+        return Math.floor(interval) + " month(s) ago";
+      }
+      interval = seconds / 86400;
+      if (interval > 1) {
+        return Math.floor(interval) + " day(s) ago";
+      }
+      interval = seconds / 3600;
+      if (interval > 1) {
+        return Math.floor(interval) + " hour(s) ago";
+      }
+      interval = seconds / 60;
+      if (interval > 1) {
+        return Math.floor(interval) + " minute(s) ago";
+      }
+      return Math.floor(seconds) + " second(s) ago";
+    }
+  </script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head > 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    
+     <link rel="stylesheet" href="colors.css">
+
+</head>
+<body data-bs-spy="scroll" data-bs-target=".navbar" data-bs-offset="70">
+
+    <div class="container-fluid">
+      
+        <div class="row">
+            
+            
+            <div class="card " style="width: 280px; height: 160px; margin-left: 80px;">
+                <div class="card-body">
+                      
+                    <img class="card-img-top " style="width: 50px; margin-left: 60px;" src="user.png" class="rounded-circle" alt="Card image">
+                    <h1 class="card-title mt-3" style="font-size: 20px;"><strong>Total Users</strong></h1>
+                    <br>
+                    <strong class="card-text mt-5" style="margin-top: 100px; margin-left: 90px; text-align: center; font-size: 25px;"><%= Totalusers[0].Total_User %></strong>
+                    
+                    
+                </div>
+            </div>
+
+            <div class="card ml-5" style="width: 280px; height: 160px;">
+                <div class="card-body">
+
+                    <img class="card-img-top" style="width: 50px; margin-left: 43px;" src="students.png" class="rounded-circle" alt="Card image">
+                    <h1 class="card-title mt-3" style="font-size: 20px;"><strong>Total Student</strong></h1>
+                    <br>
+                    <strong class="card-text mt-5" style="margin-top: 100px; margin-left: 90px; text-align: left; font-size: 25px;"><%= Totalsudents[0].Total_Student %></strong>
+                  
+                    
+                </div>
+            </div>
+
+            <div class="card ml-5" style="width: 280px; height: 160px;">
+                <div class="card-body">
+
+                    <img class="card-img-top" style="width: 50px; margin-left: 65px;" src="classs.png" class="rounded-circle" alt="Card image">
+                    <h1 class="card-title mt-3" style="font-size: 20px;"><strong>Total Class</strong></h1>
+                    <br>
+                    <strong class="card-text mt-5" style="margin-top: 100px; margin-left: 90px; text-align: left; font-size: 25px;"><%= Totalcass[0].Total_Class %></strong>
+
+                    
+                </div>
+            </div>
+
+               <div class="card ml-5" style="width: 280px; height: 160px;">
+                <div class="card-body">
+
+                    <img class="card-img-top" style="width: 50px; margin-left: 30px;" src="payment.png" class="rounded-circle" alt="Card image">
+                    <h1 class="card-title mt-3" style="font-size: 20px;"><strong>Total Payment</strong></h1>
+                    <br>
+                    <strong class="card-text mt-5" style="margin-top: 100px; margin-left: 90px; text-align: left; font-size: 25px;"><%= Totalpayment[0].Total_Payment %></strong>
+
+                    
+                </div>
+            </div>
+            
+        </div>
+
+        <h2 style="text-align: center; margin-top: 30px;">Golden School Cumpus</h2>
+
+        <div class="container-fluid">
+
+        
+        <div id="demo" class="carousel slide" data-bs-ride="carousel">
+
+          <!-- Indicators/dots -->
+          <div class="carousel-indicators">
+            <button type="button" data-bs-target="#demo" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#demo" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#demo" data-bs-slide-to="2"></button>
+          </div>
+        
+          <!-- The slideshow/carousel -->
+          <div class="carousel-inner" style="width: 1280px; height: 800px; margin-left: 50px; margin-top: 50px;">
+            <div class="carousel-item active">
+              <img src="cumpus5.jpg" alt="Los Angeles" class="d-block" style="width:100%">
+            </div>
+            <div class="carousel-item">
+              <img src="cumpus4.jpg" alt="Chicago" class="d-block"  style="width:100%">
+            </div>
+            <div class="carousel-item">
+              <img src="cumpus6.jpg" alt="New York" class="d-block" style="width:100%">
+            </div>
+          </div>
+        
+          <!-- Left and right controls/icons -->
+          <button class="carousel-control-prev" type="button" data-bs-target="#demo" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#demo" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="container" style="margin-bottom: 100px;">
+        <div class="row">
+
+        
+        <div class="col-md-6">
+          <h3>Contact Us</h3>
+
+          <div class="mb-3 mt-3">
+            <label for="email" class="form-label" style="font-size: 20px; margin-top: 30px; height: 20px;">Email:</label>
+            <input type="email" class="form-control" id="email" placeholder="Enter Email" name="email">
+          </div>
+
+          <div class="mb-3">
+            <label for="pwd" class="form-label" style="font-size: 20px; margin-top: 10px; height: 20px;">Password:</label>
+            <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="pswd">
+          </div>
+
+          <label for="comment" style="font-size: 20px; margin-top: 10px; height: 20px;">Comments:</label>
+          <textarea class="form-control" rows="5" id="comment" name="text"></textarea>
+
+          <button type="button" class="btn btn-success" style="font-size: 20px; margin-top: 20px;">Submit</button>
+        </div>
+        <div class="col-md-6">
+          <h3 >Location</h3>
+          <section class="location">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d749958.6069647135!2d44.
+            73664927024939!3d2.3581407571902306!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3d58425955ce6b53%3A0xbb20eaaa52cc59d9!2sMogadishu!5e0!3m2!1sen!2sso!4v1656783650254!5m2!1sen!2sso" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        
+           </section>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-12">
+      <section class="footer">
+        <h4 style="text-align: center; font-size: 30px;">About Us</h4>
+        <p style="font-size: 20px; text-align: center;">
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit.Pellentesque aliquet turpis nulla, eleifend faucibus est <br> sollicitudin ut. Maecenas ut venenatis ex, et dapibus purus.
+        </p>
+        <div class="icons" style="font-size: 20px; text-align: center;">
+
+            <i class="fa-brands fa-facebook""></i>
+            <i class="fa-brands fa-twitter"></i>
+            <i class="fa-brands fa-instagram"></i>
+            <i class="fa-brands fa-linkedin"></i>
+
+       
+        <p style="margin-top: 100px; text-align: center; font-size: 15px;"><i class="fa fa-heart-o"></i>Golden Official App 2023</p>
+         
+       </section>
+    </div>
+    </div>
+    
+</body>
+</html>
+
+
 
 

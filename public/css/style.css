@@ -1082,3 +1082,10 @@ h1, h2, h3, h4, h5,
   100% {
     stroke-dasharray: 89, 200;
     stroke-dashoffset: -136px; } }
+
+
+
+    .card{
+      background: #059e4a;
+      background-color: #059e4a;
+    }

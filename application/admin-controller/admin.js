@@ -27,6 +27,7 @@ const { type } = require('os')
 const setting = require('../model/setting')
 const { each } = require('async')
 const { utils } = require('xlsx')
+const { group } = require('console')
 // const { utils } = require('xlsx/types')
 var ObjectId = require('mongodb').ObjectID;
 
@@ -36,12 +37,94 @@ var ObjectId = require('mongodb').ObjectID;
 exports.admin = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
-            res.render('home')
+
+            User.aggregate([
+                
+                {$group:{
+                     _id:null,
+                     Total_User:{$sum: 1}
+                     
+                }},
+
+                {$project: {
+                    _id:0,
+                    Total_User:1
+                     }}
+                
+                ]).then((totalusers)=>{
+                    console.log("vvvvvvv",totalusers)
+                    
+                
+                    Studnet.aggregate([
+
+                        {$group:{
+                            _id:null,
+                            Total_Student:{$sum:1}
+                            
+                            }},
+                            {$project: {
+                                _id:0,
+                                Total_Student:1
+                                 }},
+
+                                
+                        
+                        ]).then((totalsudents)=>{
+                            console.log("vvvvvvv",totalsudents)
+                            Class.aggregate([
+
+                                {$group:{
+                                    _id:null,
+                                    Total_Class:{$sum:1}
+                                    
+                                    }},
+                                    {$project: {
+                                        _id:0,
+                                        Total_Class:1
+                                         }}
+                                
+                                ]).then((totalcass)=>{
+                                    console.log("vvvvvvv",totalcass)
+                                    
+                                    Fee.aggregate([
+                                        {$group:{
+                                            _id:null,
+                                            Total_Payment:{$sum:"$payment"}
+                                            
+                                            }},
+                                            {$project: {
+                                                _id:0,
+                                                Total_Payment:1
+                                                 }}
+                                        
+
+                                        
+                                        ]).then((totalpayment)=>{
+                                            console.log("vvvvvvv",totalpayment)
+                                          
+
+            res.render('home',{   
+                Totalusers:totalusers,
+                Totalsudents:totalsudents,
+                Totalcass:totalcass,
+                Totalpayment:totalpayment
+
+                })
+            })
+        })
+    })
+})
+
         } else {
             Utils.redirect_login(req, res);
         }
     });
 }
+
+
+
+
+
 
 ///// check admin credentiale /////
 exports.check_admin_login = function (req, res) {
@@ -81,8 +164,85 @@ exports.check_admin_login = function (req, res) {
                         }
                         req.session.admin = admin_data;
                         Admin.updateOne({ _id: admin._id }, { token: token, last_login: new Date(Date.now()), login_attempts: 0 }, { useFindAndModify: false }).then((Admin) => {
-                        });
-                        res.render('home')
+                            User.aggregate([
+                
+                                {$group:{
+                                     _id:null,
+                                     Total_User:{$sum: 1}
+                                     
+                                }},
+                
+                                {$project: {
+                                    _id:0,
+                                    Total_User:1
+                                     }}
+                                
+                                ]).then((totalusers)=>{
+                                    console.log("vvvvvvv",totalusers)
+                                    
+                                
+                                    Studnet.aggregate([
+                
+                                        {$group:{
+                                            _id:null,
+                                            Total_Student:{$sum:1}
+                                            
+                                            }},
+                                            {$project: {
+                                                _id:0,
+                                                Total_Student:1
+                                                 }},
+                
+                                                
+                                        
+                                        ]).then((totalsudents)=>{
+                                            console.log("vvvvvvv",totalsudents)
+                                            Class.aggregate([
+                
+                                                {$group:{
+                                                    _id:null,
+                                                    Total_Class:{$sum:1}
+                                                    
+                                                    }},
+                                                    {$project: {
+                                                        _id:0,
+                                                        Total_Class:1
+                                                         }}
+                                                
+                                                ]).then((totalcass)=>{
+                                                    console.log("vvvvvvv",totalcass)
+                                                    
+                                                    Fee.aggregate([
+                                                        {$group:{
+                                                            _id:null,
+                                                            Total_Payment:{$sum:"$payment"}
+                                                            
+                                                            }},
+                                                            {$project: {
+                                                                _id:0,
+                                                                Total_Payment:1
+                                                                 }}
+                                                        
+                
+                                                        
+                                                        ]).then((totalpayment)=>{
+                                                            console.log("vvvvvvv",totalpayment)
+
+                                                        
+                                                    
+                        
+                        res.render('home',{
+
+                            Totalusers:totalusers,
+                            Totalsudents:totalsudents,
+                            Totalcass:totalcass,
+                            Totalpayment:totalpayment
+                        })
+                    })
+                })
+            })
+        })
+    })
                     }
                 }
             });
@@ -579,9 +739,7 @@ exports.student_list = function (req, res) {
     
 
                 ]).then((student_Array) => {
-                   
-
-
+                    
                     res.render('student_list', {
                         Student: student_Array,
                         msg: req.session.error,

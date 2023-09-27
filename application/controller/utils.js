@@ -326,6 +326,17 @@ exports.send_notification=function(data, response) {
 exports = systen_urls = [
     "home",
     "admin_list",
-    "student_list"    
+    "user_list",
+    "student_list",
+    "class_list",
+    "sreport_list",
+    "subject_list",
+    "exam_list",
+    "fee_list",
+    "feereport_list",
+    "message_list",
+    "quiz_list",
+    "resultQuiz_list",
+    "typequiz_list"    
 ]
 

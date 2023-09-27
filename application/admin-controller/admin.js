@@ -52,7 +52,6 @@ exports.admin = function (req, res) {
                      }}
                 
                 ]).then((totalusers)=>{
-                    console.log("vvvvvvv",totalusers)
                     
                 
                     Studnet.aggregate([
@@ -67,10 +66,9 @@ exports.admin = function (req, res) {
                                 Total_Student:1
                                  }},
 
-                                
-                        
+                
                         ]).then((totalsudents)=>{
-                            console.log("vvvvvvv",totalsudents)
+                            
                             Class.aggregate([
 
                                 {$group:{
@@ -84,7 +82,7 @@ exports.admin = function (req, res) {
                                          }}
                                 
                                 ]).then((totalcass)=>{
-                                    console.log("vvvvvvv",totalcass)
+                                   
                                     
                                     Fee.aggregate([
                                         {$group:{
@@ -96,13 +94,10 @@ exports.admin = function (req, res) {
                                                 _id:0,
                                                 Total_Payment:1
                                                  }}
-                                        
-
-                                        
+                          
                                         ]).then((totalpayment)=>{
-                                            console.log("vvvvvvv",totalpayment)
-                                          
-
+                                         
+              
             res.render('home',{   
                 Totalusers:totalusers,
                 Totalsudents:totalsudents,
@@ -120,7 +115,6 @@ exports.admin = function (req, res) {
         }
     });
 }
-
 
 
 
@@ -178,7 +172,7 @@ exports.check_admin_login = function (req, res) {
                                      }}
                                 
                                 ]).then((totalusers)=>{
-                                    console.log("vvvvvvv",totalusers)
+                                   
                                     
                                 
                                     Studnet.aggregate([
@@ -196,7 +190,7 @@ exports.check_admin_login = function (req, res) {
                                                 
                                         
                                         ]).then((totalsudents)=>{
-                                            console.log("vvvvvvv",totalsudents)
+                                            
                                             Class.aggregate([
                 
                                                 {$group:{
@@ -210,7 +204,7 @@ exports.check_admin_login = function (req, res) {
                                                          }}
                                                 
                                                 ]).then((totalcass)=>{
-                                                    console.log("vvvvvvv",totalcass)
+                                                    
                                                     
                                                     Fee.aggregate([
                                                         {$group:{
@@ -226,10 +220,7 @@ exports.check_admin_login = function (req, res) {
                 
                                                         
                                                         ]).then((totalpayment)=>{
-                                                            console.log("vvvvvvv",totalpayment)
-
-                                                        
-                                                    
+                                   
                         
                         res.render('home',{
 

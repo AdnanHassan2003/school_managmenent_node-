@@ -111,6 +111,15 @@
       display: none !important;
     }
 
+
+    #map-report div.gmnoprint{
+      display: none; 
+    }
+    #map-report div.gmnoscreen {
+    display: none;      
+    }
+    
+
     .goog-tooltip:hover {
       display: none !important;
     }
@@ -124,11 +133,11 @@
     .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon {
         display: none !important;
     }
-  
-    
-    
  
   </style>
+
+
+
   <script type="text/javascript">
     function googleTranslateElementInit() {
       //code from step 4th    
@@ -141,6 +150,8 @@
       $('.goog-logo-link').css('display', 'none');
       $('.goog-te-gadget').css('font-size', '0');
     }
+
+    
   </script>
   <script>
     $(document).ready(function () {
@@ -195,7 +206,7 @@
       <ul class="navbar-nav ml-auto">
         <li class="xn-icon-button pull-right last" style="margin-right: 10px;color: white; width: auto;">
           <span>
-            <div id="google_translate_element" style="margin-right: 20px;float: left;">
+            <div id="google_translate_element" style="margin-right: 40px;float: left;">
             </div>
           </span>
           <span style="float: left;"> <img style=" border-radius: 50%; width: 35px; height: 35px; margin-right: 10px;"
@@ -214,7 +225,7 @@
       <!-- Brand Logo -->
       <a href="#" class="brand-link" style="text-align: center;">
         <span class="brand-text font-weight-light">
-          <%= process.env.app_name %>
+          Golden Academy
         </span>
       </a>
       <!-- Sidebar -->
@@ -222,7 +233,7 @@
         <!-- Sidebar user (optional) -->
         <div class="center user-panel ">
           <div class="image center">
-            <img src="app_icons/app_icon.jpg" class="center img-circle elevation-2" style="display: block;
+            <img src="icon.jpg" class="center img-circle elevation-2" style="display: block;
             margin-left: auto;
             margin-right: auto;
             width: 50%;" alt="User Image">

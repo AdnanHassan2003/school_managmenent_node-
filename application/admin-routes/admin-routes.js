@@ -29,6 +29,7 @@ module.exports = function (app) {
   
   
 
+
   app.route('/student_list').get(adminController.student_list);
   app.route('/student_list').post(adminController.student_list);
   app.route('/add_student').get(adminController.add_student)
@@ -41,8 +42,23 @@ module.exports = function (app) {
 
 
 
-  app.route('/sreport_list').get(adminController.sreport_list);
-  app.route('/sreport_list').post(adminController.sreport_list);
+
+
+  
+  app.route('/teacher_list').get(adminController.teacher_list)
+  app.route('/teacher_list').post(adminController.teacher_list)
+  app.route('/add_teacher').get(adminController.add_teacher)
+  app.route('/add_teacher').post(adminController.add_teacher)
+  app.route('/save_teacher_data').post(adminController.save_teacher_data)
+  app.route('/edit_teacher').post(adminController.edit_teacher)
+  app.route('/update_teacher_details').post(adminController.update_teacher_details)
+  app.route('/delete_teacher').post(adminController.delete_teacher)
+  
+  
+ 
+  
+  
+ 
   
 
  
@@ -58,7 +74,15 @@ module.exports = function (app) {
   app.route('/delete_class').post(adminController.delete_class);
   
 
+
+
+
+//student report mahaan ee waa class report
+  app.route('/sreport_list').get(adminController.sreport_list);
+  app.route('/sreport_list').post(adminController.sreport_list);
   
+
+
 
 
   app.route('/subject_list').get(adminController.subject_list);

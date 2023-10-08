@@ -1,6 +1,7 @@
 var Admin = require('mongoose').model('admin')
 var User = require('mongoose').model('users')
 var Studnet = require('mongoose').model('student')
+var Teacher = require('mongoose').model('teacher')
 var Class = require('mongoose').model('class')
 var Subject = require('mongoose').model('subject')
 var Exam = require('mongoose').model('exam')
@@ -673,8 +674,7 @@ exports.user_list = function (req, res) {
 
 
 
-exports.student_list = function (req, res) {
-        
+exports.student_list = function (req, res) {    
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
 
@@ -694,11 +694,9 @@ exports.student_list = function (req, res) {
 
             Class.find({}).then((class_data) => {
 
-
                 Studnet.aggregate([
                     filter,
                    
-
                     {
                         $lookup:
                         {
@@ -725,10 +723,6 @@ exports.student_list = function (req, res) {
                         }
                     },
 
-
-
-    
-
                 ]).then((student_Array) => {
                     
                     res.render('student_list', {
@@ -750,6 +744,30 @@ exports.student_list = function (req, res) {
         }
     })
 }
+
+
+
+
+
+exports.teacher_list = function(req, res){
+    Utils.check_admin_token(req.session.admin, function (response){
+          if(response.success){
+            Teacher.find({}).then((teacher_data)=>{
+
+                res.render('teacher_list',{
+                    Teacher:teacher_data,
+                    msg: req.session.error,
+                    moment: moment,
+                    admin_type: req.session.admin.usertype
+
+                })
+            })
+          }
+        
+    })
+}
+
+
 
 
 
@@ -1387,6 +1405,26 @@ exports.add_student = function (req, res) {
 };
 
 
+
+
+exports.add_teacher = function(req, res){
+    Utils.check_admin_token(req.session.admin, function (response){
+        if(response.success){
+            res.render('add_teacher',{
+                systen_urls: systen_urls, msg: req.session.error
+            })
+        }
+        else{
+            Utils.redirect_login(req,res)
+        }
+    })
+}
+
+
+
+
+
+
 /// ADD Class
 exports.add_class = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
@@ -1800,6 +1838,88 @@ exports.save_student_data = function (req, res) {
 
 
 
+
+
+//  handele create teacher list
+exports.save_teacher_data = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        console.log("body", req.body)
+        if (response.success) {
+            Teacher.findOne({ "phone": req.body.phone }).then((teacher) => {
+                console.log("user", teacher)
+                if (teacher) {
+                    req.session.error = "Sorry, There is an admin with this phone, please check the phone";
+                    Utils.redirect_login(req, res);
+                } else {
+                    // Create a schema
+                    var schema = new passwordValidator();
+                    schema.is().min(8)                                 // Minimum length 8
+                        .is().max(30)                                  // Maximum length 100
+                        .has().lowercase()                             // Must have lowercase letters
+                        .has().digits()                                // Must have at least 2 digits
+                        .has().not().spaces();                         // Blacklist these values
+                    // Validate against a password string
+                    if (schema.validate(req.body.password)) {
+                        var profile_file = req.files;
+                        var name = req.body.name
+                        var teacher = new Teacher({
+                            name: name,
+                            sequence_id: Utils.get_unique_id(),
+                            email: req.body.email,
+                            phone: req.body.phone,
+                            fee:req.body.fee,
+                            status: 1,
+                            extra_detail: req.body.extra_detail,
+                            picture: "",
+                            user_name: req.body.user_name,
+                            PassWord:req.body.password,
+                            password: Bcrypt.hashSync(req.body.password, 10)
+                        });
+                        if (profile_file != undefined && profile_file.length > 0) {
+                            //var image_name = student._id + Utils.tokenGenerator(4);
+                            //var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
+                           // Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
+                           
+
+                            /// inser images
+                            image_name = Utils.tokenGenerator(29) + '.jpg';
+                            //v
+                            url = "./uploads/admin_profile/" + image_name;
+                            liner = "admin_profile/" + image_name;
+                            // console.log("linear", liner)
+                            // console.log("url", url)
+                            fs.readFile(req.files[0].path, function (err, data) {
+                                fs.writeFile(url, data, 'binary', function (err) { });
+                                fs.unlink(req.files[0].path, function (err, file) {
+                    
+                                });
+                            });
+                            
+                            teacher.picture = liner;
+                        }
+                        teacher.save().then((admin) => {
+                            req.session.error = "Congrates, Admin was created successfully.........";
+                            res.redirect("/teacher_list");
+                        });
+                    } else {
+                        req.session.error = "Please use strong password that contains latrers and Digitals";
+                        res.redirect("/add_teacher")
+                    }
+                }
+            })
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+
+};
+
+
+
+
+
+
+
 //  handele create class list
 exports.save_class_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
@@ -2147,6 +2267,31 @@ exports.edit_student = function (req, res) {
 };
 
 
+
+
+/// handle edit student info
+exports.edit_teacher = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Teacher.findOne({ _id: req.body.teacher_id }, { password: 0 }).then((teacher) => {
+                if (teacher) {
+                    // console.log(admin)
+                    res.render("add_teacher", { teacher_data: teacher, systen_urls: systen_urls })
+                } else {
+                    res.redirect("/teacher_list")
+                }
+            });
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+};
+
+
+
+
+
+
 //// handle edit student info
 exports.edit_class = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
@@ -2474,6 +2619,57 @@ exports.update_student_details = function (req, res) {
 };
 
 
+
+
+
+/// handle update class info
+exports.update_teacher_details = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            var profile_file = req.files;
+            req.body.name = req.body.name.split(' ').map(w => w[0].toUpperCase() + w.substr(1).toLowerCase()).join(' ');
+            if (profile_file == '' || profile_file == 'undefined') {
+                Teacher.findByIdAndUpdate(req.body.teacher_id, req.body, { useFindAndModify: false }).then((data) => {
+                    if (data._id.equals(req.session.admin.teacher_id)) {
+                        Utils.redirect_login(req, res);
+                    } else {
+                        res.redirect("/teacher_list");
+                    }
+                }, (err) => {
+                    res.redirect("/teacher_list");
+                });
+            } else {
+                Teacher.findById(req.body.teacher_id).then((teacher) => {
+                    if (user.picture) {
+                        Utils.deleteImageFromFolderTosaveNewOne(user.picture, 1);
+                    }
+                    var image_name = user._id + Utils.tokenGenerator(4);
+                    var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
+                    Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
+                    req.body.picture = url;
+                    // req.body.passport_expire_date = moment(req.body.passport_expire_date).format("MMM Do YYYY");
+                 Teacher.findByIdAndUpdate(req.body.teacher_id, req.body, { useFindAndModify: false }).then((data) => {
+                        if (data._id.equals(req.session.admin.teacher_id)) {
+                            Utils.redirect_login(req, res);
+                        } else {
+                            res.redirect("/teacher_list");
+                        }
+                    }, (err) => {
+                        res.redirect("/teacher_list");
+                    });
+                });
+            }
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+};
+
+
+
+
+
+
 /// handle update class info
 exports.update_class_details = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
@@ -2766,6 +2962,22 @@ exports.delete_student = function (req, res) {
         }
     });
 };
+
+
+
+////  delete teacher function
+exports.delete_teacher = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Teacher.deleteOne({ _id: req.body.teacher_id }).then((user) => {
+                res.redirect("/teacher_list")
+            });
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+};
+
 
 
 ////  delete class function

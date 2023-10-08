@@ -15,7 +15,8 @@ module.exports = function () {
     var db = mongoose.connect(DB_URL, {useFindAndModify: false, useUnifiedTopology: true, useNewUrlParser: true, useCreateIndex: true });
     require("../application/model/admin");   
     require("../application/model/users");  
-    require("../application/model/student");  
+    require("../application/model/student"); 
+    require("../application/model/teacher"); 
     require("../application/model/class"); 
     require("../application/model/subject"); 
     require("../application/model/exam"); 

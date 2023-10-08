@@ -83,7 +83,8 @@
   <script src="plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
   <!-- Summernote -->
   <script src="plugins/summernote/summernote-bs4.min.js"></script>
-  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script> 
+  <!-- <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>  -->
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   <style type="text/css">  
     .system-bottons {
@@ -98,6 +99,10 @@
     .goog-te-banner-frame.skiptranslate {
       display: none !important;
     }
+    
+    .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon {
+        display: none !important;
+    }
 
     body {
       top: 0px !important;
@@ -111,15 +116,12 @@
       display: none !important;
     }
 
+    #google_translate_element{
 
-    #map-report div.gmnoprint{
-      display: none; 
-    }
-    #map-report div.gmnoscreen {
-    display: none;      
+      overflow: hidden !important; 
+      height: 26px !important;
     }
     
-
     .goog-tooltip:hover {
       display: none !important;
     }
@@ -136,13 +138,12 @@
  
   </style>
 
-
-
   <script type="text/javascript">
     function googleTranslateElementInit() {
       //code from step 4th    
       new google.translate.TranslateElement({
         pageLanguage: 'en',
+        autoDisplay: false,
         includedLanguages: 'en,so,am,ar,sw'
       }, 'google_translate_element');
 
@@ -150,6 +151,7 @@
       $('.goog-logo-link').css('display', 'none');
       $('.goog-te-gadget').css('font-size', '0');
     }
+    
 
     
   </script>
@@ -206,7 +208,7 @@
       <ul class="navbar-nav ml-auto">
         <li class="xn-icon-button pull-right last" style="margin-right: 10px;color: white; width: auto;">
           <span>
-            <div id="google_translate_element" style="margin-right: 40px;float: left;">
+            <div id="google_translate_element" style="margin-right: 40px;float: left; height: 26px;">
             </div>
           </span>
           <span style="float: left;"> <img style=" border-radius: 50%; width: 35px; height: 35px; margin-right: 10px;"
@@ -300,6 +302,12 @@
                       <p>Student List</p>
                     </a>
                   </li> 
+
+                  <li class="nav-item" id="teacher_list">
+                    <a href="/teacher_list" class="nav-link">
+                      <p>Teacher_List</p>
+                    </a>
+                  </li>
 
                   
                   <li class="nav-item" id="class_list">

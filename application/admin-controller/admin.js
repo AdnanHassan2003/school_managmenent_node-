@@ -161,8 +161,9 @@ exports.check_admin_login = function (req, res) {
                     req.session.error = process.env.user_not_registered;
                     res.redirect("/admin")
                 } else {
-                    if (admin.password != hash) {
-                      
+                    if (!admin.comparePassword((req.body.password).toString())) {
+                      //!admin.comparePassword((req.body.password).toString())
+                      //admin.password != hash
                         var login_attempts = admin.login_attempts + 1;
                         Admin.updateOne({ _id: admin._id }, { login_attempt_time: new Date(Date.now()), login_attempts: login_attempts }, { useFindAndModify: false }).then((Admin) => {
                         });

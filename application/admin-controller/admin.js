@@ -154,7 +154,7 @@ exports.check_admin_login = function (req, res) {
             user_name['user_name'] = name;
             var password = {};
             password['password'] = hash;
-            console.log("hash", hash)
+           // console.log("hash", hash)
             Admin.findOne({ $and: [{ $or: [phone, email, user_name] }, { status: 1 }] }).then((admin) => {
               
                 if (!admin) {

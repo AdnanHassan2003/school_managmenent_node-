@@ -15,12 +15,14 @@ const Bcrypt = require('bcryptjs');
 var moment = require('moment-timezone');
 var Excel = require('exceljs');
 var fs = require('fs');
-var node_gcm=require("node-gcm")
+var node_gcm = require("node-gcm")
+var crypto = require('crypto');
+
 var Utils = require('../controller/utils');
 var passwordValidator = require('password-validator');
 const { body } = require('express-validator');
 const _class = require('../model/class');
-const { filter, flatMap } = require('lodash');
+const { filter, flatMap, has } = require('lodash');
 const { title } = require('process')
 const session = require('express-session')
 const { response } = require('express')
@@ -40,76 +42,92 @@ exports.admin = function (req, res) {
         if (response.success) {
 
             User.aggregate([
-                
-                {$group:{
-                     _id:null,
-                     Total_User:{$sum: 1}
-                     
-                }},
 
-                {$project: {
-                    _id:0,
-                    Total_User:1
-                     }}
-                
-                ]).then((totalusers)=>{
-                    
-                
-                    Studnet.aggregate([
+                {
+                    $group: {
+                        _id: null,
+                        Total_User: { $sum: 1 }
 
-                        {$group:{
-                            _id:null,
-                            Total_Student:{$sum:1}
-                            
-                            }},
-                            {$project: {
-                                _id:0,
-                                Total_Student:1
-                                 }},
+                    }
+                },
 
-                
-                        ]).then((totalsudents)=>{
-                            
-                            Class.aggregate([
+                {
+                    $project: {
+                        _id: 0,
+                        Total_User: 1
+                    }
+                }
 
-                                {$group:{
-                                    _id:null,
-                                    Total_Class:{$sum:1}
-                                    
-                                    }},
-                                    {$project: {
-                                        _id:0,
-                                        Total_Class:1
-                                         }}
-                                
-                                ]).then((totalcass)=>{
-                                   
-                                    
-                                    Fee.aggregate([
-                                        {$group:{
-                                            _id:null,
-                                            Total_Payment:{$sum:"$payment"}
-                                            
-                                            }},
-                                            {$project: {
-                                                _id:0,
-                                                Total_Payment:1
-                                                 }}
-                          
-                                        ]).then((totalpayment)=>{
-                                         
-              
-            res.render('home',{   
-                Totalusers:totalusers,
-                Totalsudents:totalsudents,
-                Totalcass:totalcass,
-                Totalpayment:totalpayment
+            ]).then((totalusers) => {
 
+
+                Studnet.aggregate([
+
+                    {
+                        $group: {
+                            _id: null,
+                            Total_Student: { $sum: 1 }
+
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            Total_Student: 1
+                        }
+                    },
+
+
+                ]).then((totalsudents) => {
+
+                    Class.aggregate([
+
+                        {
+                            $group: {
+                                _id: null,
+                                Total_Class: { $sum: 1 }
+
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                Total_Class: 1
+                            }
+                        }
+
+                    ]).then((totalcass) => {
+
+
+                        Fee.aggregate([
+                            {
+                                $group: {
+                                    _id: null,
+                                    Total_Payment: { $sum: "$payment" }
+
+                                }
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    Total_Payment: 1
+                                }
+                            }
+
+                        ]).then((totalpayment) => {
+
+
+                            res.render('home', {
+                                Totalusers: totalusers,
+                                Totalsudents: totalsudents,
+                                Totalcass: totalcass,
+                                Totalpayment: totalpayment
+
+                            })
+                        })
+                    })
                 })
             })
-        })
-    })
-})
 
         } else {
             Utils.redirect_login(req, res);
@@ -124,6 +142,7 @@ exports.admin = function (req, res) {
 ///// check admin credentiale /////
 exports.check_admin_login = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
+        var hash = crypto.createHash('md5').update(req.body.password).digest('hex');
         if (!response.success) {
             var name = req.body.email
             // Encrypt
@@ -133,19 +152,24 @@ exports.check_admin_login = function (req, res) {
             email['email'] = name;
             var user_name = {};
             user_name['user_name'] = name;
-
+            var password = {};
+            password['password'] = hash;
+            console.log("hash", hash)
             Admin.findOne({ $and: [{ $or: [phone, email, user_name] }, { status: 1 }] }).then((admin) => {
+              
                 if (!admin) {
                     req.session.error = process.env.user_not_registered;
                     res.redirect("/admin")
                 } else {
-                    if (!admin.comparePassword((req.body.password).toString())) {
+                    if (admin.password != hash) {
+                      
                         var login_attempts = admin.login_attempts + 1;
                         Admin.updateOne({ _id: admin._id }, { login_attempt_time: new Date(Date.now()), login_attempts: login_attempts }, { useFindAndModify: false }).then((Admin) => {
                         });
                         req.session.error = process.env.email_pass_invalid;
                         res.redirect("/admin")
                     } else {
+
                         var token = Utils.tokenGenerator(36);
                         var admin_data = {
                             usertype: admin.type,
@@ -160,81 +184,97 @@ exports.check_admin_login = function (req, res) {
                         req.session.admin = admin_data;
                         Admin.updateOne({ _id: admin._id }, { token: token, last_login: new Date(Date.now()), login_attempts: 0 }, { useFindAndModify: false }).then((Admin) => {
                             User.aggregate([
-                
-                                {$group:{
-                                     _id:null,
-                                     Total_User:{$sum: 1}
-                                     
-                                }},
-                
-                                {$project: {
-                                    _id:0,
-                                    Total_User:1
-                                     }}
-                                
-                                ]).then((totalusers)=>{
-                                   
-                                    
-                                
-                                    Studnet.aggregate([
-                
-                                        {$group:{
-                                            _id:null,
-                                            Total_Student:{$sum:1}
-                                            
-                                            }},
-                                            {$project: {
-                                                _id:0,
-                                                Total_Student:1
-                                                 }},
-                
-                                                
-                                        
-                                        ]).then((totalsudents)=>{
-                                            
-                                            Class.aggregate([
-                
-                                                {$group:{
-                                                    _id:null,
-                                                    Total_Class:{$sum:1}
-                                                    
-                                                    }},
-                                                    {$project: {
-                                                        _id:0,
-                                                        Total_Class:1
-                                                         }}
-                                                
-                                                ]).then((totalcass)=>{
-                                                    
-                                                    
-                                                    Fee.aggregate([
-                                                        {$group:{
-                                                            _id:null,
-                                                            Total_Payment:{$sum:"$payment"}
-                                                            
-                                                            }},
-                                                            {$project: {
-                                                                _id:0,
-                                                                Total_Payment:1
-                                                                 }}
-                                                        
-                
-                                                        
-                                                        ]).then((totalpayment)=>{
-                                   
-                        
-                        res.render('home',{
 
-                            Totalusers:totalusers,
-                            Totalsudents:totalsudents,
-                            Totalcass:totalcass,
-                            Totalpayment:totalpayment
+                                {
+                                    $group: {
+                                        _id: null,
+                                        Total_User: { $sum: 1 }
+
+                                    }
+                                },
+
+                                {
+                                    $project: {
+                                        _id: 0,
+                                        Total_User: 1
+                                    }
+                                }
+
+                            ]).then((totalusers) => {
+
+
+
+                                Studnet.aggregate([
+
+                                    {
+                                        $group: {
+                                            _id: null,
+                                            Total_Student: { $sum: 1 }
+
+                                        }
+                                    },
+                                    {
+                                        $project: {
+                                            _id: 0,
+                                            Total_Student: 1
+                                        }
+                                    },
+
+
+
+                                ]).then((totalsudents) => {
+
+                                    Class.aggregate([
+
+                                        {
+                                            $group: {
+                                                _id: null,
+                                                Total_Class: { $sum: 1 }
+
+                                            }
+                                        },
+                                        {
+                                            $project: {
+                                                _id: 0,
+                                                Total_Class: 1
+                                            }
+                                        }
+
+                                    ]).then((totalcass) => {
+
+
+                                        Fee.aggregate([
+                                            {
+                                                $group: {
+                                                    _id: null,
+                                                    Total_Payment: { $sum: "$payment" }
+
+                                                }
+                                            },
+                                            {
+                                                $project: {
+                                                    _id: 0,
+                                                    Total_Payment: 1
+                                                }
+                                            }
+
+
+
+                                        ]).then((totalpayment) => {
+                                           
+                                            res.render('home', {
+
+
+                                                Totalusers: totalusers,
+                                                Totalsudents: totalsudents,
+                                                Totalcass: totalcass,
+                                                Totalpayment: totalpayment
+                                            })
+                                        })
+                                    })
+                                })
+                            })
                         })
-                    })
-                })
-            })
-        })
-    })
                     }
                 }
             });
@@ -246,17 +286,17 @@ exports.check_admin_login = function (req, res) {
 
 
 //Api for pretical 
-exports.get_all_students=function(req,res){
-    Studnet.find({}).then((std)=>{
-        if(std.length>0){
+exports.get_all_students = function (req, res) {
+    Studnet.find({}).then((std) => {
+        if (std.length > 0) {
             res.send({
-                success:true,
-                record:std
+                success: true,
+                record: std
             })
-        }else{
+        } else {
             res.send({
-                success:false,
-                record:[]
+                success: false,
+                record: []
             })
         }
     })
@@ -264,25 +304,25 @@ exports.get_all_students=function(req,res){
 
 
 //APP Apis Login
-exports.use_login = function(req,res){
-   
-  
-    Studnet.find({email:req.body.email,PassWord:req.body.PassWord}).then((user_name) => {
-        
-        if(user_name.length>0){
-            Studnet.findOneAndUpdate({email:req.body.email},{$set:{token:req.body.token}}).then((data)=>{
-               
+exports.use_login = function (req, res) {
+
+
+    Studnet.find({ email: req.body.email, PassWord: req.body.PassWord }).then((user_name) => {
+
+        if (user_name.length > 0) {
+            Studnet.findOneAndUpdate({ email: req.body.email }, { $set: { token: req.body.token } }).then((data) => {
+
 
                 res.send({
-                    success:true,
-                    record:user_name
+                    success: true,
+                    record: user_name
                 })
             })
         }
-        else{
+        else {
             res.send({
-                success:false,
-                record:"username or password incorrect"
+                success: false,
+                record: "username or password incorrect"
             })
         }
 
@@ -292,100 +332,112 @@ exports.use_login = function(req,res){
 
 
 //APP Apis Exam Result
-exports.exam_result = function(req,res){
+exports.exam_result = function (req, res) {
     // console.log("request", req,body)
 
-   
-            Exam.aggregate([
-              
-                    {
-                        $match: {
-                        "student_id" : ObjectId(req.body.student_id)
-                        }},
-                        {
-                    $lookup: {
-                        
-                           from: "subjects",
-                           localField: "subject_id",
-                           foreignField: "_id",
-                           as: "class_data"
-                         
-                        }},
-                        
-                        {$unwind: "$class_data"},
-                        
-                        
-                        {$project:{
-                            _id:0,
-                            subject:"$class_data.name",
-                            marks:1
-                            }}
-                
-                ]).then((data)=>{
-                    Exam.aggregate([
 
-                        {$lookup: {
-                              from: "subjects",
-                              localField: "subject_id",
-                              foreignField: "_id",
-                              as: "class_data"
-                            }},
-                            
-                            {$unwind: "$class_data"},
-                            
-                            {$match: {student_id: ObjectId(req.body.student_id)
-                                }},
-                
-                                {$group:{
-                                 _id:null,
-                                 totalmarks:{$sum: "$marks"},
-                                 total_sub:{$sum: 1}
-                                 }
-                                 
-                                },
-                                    {$project: {
-                                       _id:0,
-                                        totalmarks:1,
-                                        total_sub:1
-                                        }}
-                        ]).then((totalmarks) =>{
-                            if(data.length>0){
+    Exam.aggregate([
 
-                                res.send({
-                                    success:true,
-                                    record:data,totalmarks
-                                
-                                
-                                })
-                            }else{
-                                res.send({
-                                    success:false,
-                                    record:[]
-                                })
-                            }
-                        })
-                
-                   
-                        })
-                   
+        {
+            $match: {
+                "student_id": ObjectId(req.body.student_id)
+            }
+        },
+        {
+            $lookup: {
+
+                from: "subjects",
+                localField: "subject_id",
+                foreignField: "_id",
+                as: "class_data"
 
             }
+        },
+
+        { $unwind: "$class_data" },
+
+
+        {
+            $project: {
+                _id: 0,
+                subject: "$class_data.name",
+                marks: 1
+            }
+        }
+
+    ]).then((data) => {
+        Exam.aggregate([
+
+            {
+                $lookup: {
+                    from: "subjects",
+                    localField: "subject_id",
+                    foreignField: "_id",
+                    as: "class_data"
+                }
+            },
+
+            { $unwind: "$class_data" },
+
+            {
+                $match: {
+                    student_id: ObjectId(req.body.student_id)
+                }
+            },
+
+            {
+                $group: {
+                    _id: null,
+                    totalmarks: { $sum: "$marks" },
+                    total_sub: { $sum: 1 }
+                }
+
+            },
+            {
+                $project: {
+                    _id: 0,
+                    totalmarks: 1,
+                    total_sub: 1
+                }
+            }
+        ]).then((totalmarks) => {
+            if (data.length > 0) {
+
+                res.send({
+                    success: true,
+                    record: data, totalmarks
+
+
+                })
+            } else {
+                res.send({
+                    success: false,
+                    record: []
+                })
+            }
+        })
+
+
+    })
+
+
+}
 
 
 
 
 //Api for messages 
-exports.all_messages=function(req,res){
-    Message.find({}).then((messages)=>{
-        if(messages.length>0){
+exports.all_messages = function (req, res) {
+    Message.find({}).then((messages) => {
+        if (messages.length > 0) {
             res.send({
-                success:true,
-                record:messages
+                success: true,
+                record: messages
             })
-        }else{
+        } else {
             res.send({
-                success:false,
-                record:[]
+                success: false,
+                record: []
             })
         }
     })
@@ -394,96 +446,100 @@ exports.all_messages=function(req,res){
 
 
 //Api for Change Password
-exports.change_password = function(req,res){
-            Studnet.findOneAndUpdate({_id:req.body._id},{$set:{PassWord:req.body.PassWord}}).then((data)=>{
+exports.change_password = function (req, res) {
+    Studnet.findOneAndUpdate({ _id: req.body._id }, { $set: { PassWord: req.body.PassWord } }).then((data) => {
 
-                res.send({
-                    success:true,
-                    record:data
-                })
-            })
-            
-      
-   
+        res.send({
+            success: true,
+            record: data
+        })
+    })
+
+
+
 }
 
 
 
 
-exports.read_quiz =function(req,res){
+exports.read_quiz = function (req, res) {
     Types_Quiz.aggregate([
 
-        {$lookup:{
-            
-            from:"quizzes",
-            localField:"_id",
-            foreignField:"quiz_id",
-            as:"Datatype"
-            
-            }},
-            
-            {$unwind:"$Datatype"},
-            
-            
-            {$match: {status: 1}},
-            
-            
-            
-            {$project:{
-                _id:0,
-                quetion:"$Datatype.quetion",
-                answer1:"$Datatype.answer1",
-                answer2:"$Datatype.answer2",
-                answer3:"$Datatype.answer3",
-                correct:"$Datatype.correct",
-                marks:"$Datatype.marks",
-                quiz_id:"$Datatype.quiz_id",
-                class_id:1,
-                subject_id:1,
-                status:1,
-                name:1
-                
-                
-                }}
-            
-        
-        ]).then((data)=>{
+        {
+            $lookup: {
 
+                from: "quizzes",
+                localField: "_id",
+                foreignField: "quiz_id",
+                as: "Datatype"
 
-           
-
-            //   if(Rquiz.length==0){
-
-            if(data.length>0){
-                
-                Result_Quiz.find({quiz_id:data[0].quiz_id,student_id:req.body.student_id}).then((Rquiz)=>{
-                    
-                    if(Rquiz.length==0){
-
-                    
-                res.send({
-                   success:true,
-                   record:data 
-                })
-
-            }else{
-                res.send({
-                    success:false,
-                    record:[]
-                })
             }
+        },
+
+        { $unwind: "$Datatype" },
+
+
+        { $match: { status: 1 } },
+
+
+
+        {
+            $project: {
+                _id: 0,
+                quetion: "$Datatype.quetion",
+                answer1: "$Datatype.answer1",
+                answer2: "$Datatype.answer2",
+                answer3: "$Datatype.answer3",
+                correct: "$Datatype.correct",
+                marks: "$Datatype.marks",
+                quiz_id: "$Datatype.quiz_id",
+                class_id: 1,
+                subject_id: 1,
+                status: 1,
+                name: 1
+
+
+            }
+        }
+
+
+    ]).then((data) => {
+
+
+
+
+        //   if(Rquiz.length==0){
+
+        if (data.length > 0) {
+
+            Result_Quiz.find({ quiz_id: data[0].quiz_id, student_id: req.body.student_id }).then((Rquiz) => {
+
+                if (Rquiz.length == 0) {
+
+
+                    res.send({
+                        success: true,
+                        record: data
+                    })
+
+                } else {
+                    res.send({
+                        success: false,
+                        record: []
+                    })
+                }
 
             })
-            
+
         }
-            else{
-                res.send({
-                    success:false,
-                    record:[]
-                })
-            }
-        
-   
+        else {
+            res.send({
+                success: false,
+                record: []
+            })
+        }
+
+
     })
 }
 
@@ -496,40 +552,40 @@ exports.read_quiz =function(req,res){
 
 //Api for save result quiz  
 exports.save_result_quiz = function (req, res) {
-      console.log("ggggggg",req.body)
-                        var name = req.body.name
-                        var resultquiz = new Result_Quiz({
-                            
-                            sequence_id: Utils.get_unique_id(),
-                            name: name,
-                            student_id:req.body.student_id,
-                            quiz_id:req.body.quiz_id,
-                            class_id:req.body.class_id,
-                            subject_id:req.body.subject_id,
-                            correct:req.body.correct,
-                            wrong:req.body.wrong,
-                            marks:req.body.marks,
+    console.log("ggggggg", req.body)
+    var name = req.body.name
+    var resultquiz = new Result_Quiz({
 
-                        });
-                      
-                        resultquiz.save().then((result) => {
+        sequence_id: Utils.get_unique_id(),
+        name: name,
+        student_id: req.body.student_id,
+        quiz_id: req.body.quiz_id,
+        class_id: req.body.class_id,
+        subject_id: req.body.subject_id,
+        correct: req.body.correct,
+        wrong: req.body.wrong,
+        marks: req.body.marks,
 
-                            if(result.length>0){
-                                res.send({
-                                    success:true,
-                                    record:result
-                                })
-                            }
+    });
 
-                            else{
-                                res.send({
-                                    success:false,
-                                    record:[]
-                                })
-                            }
-                           
-                        });
-    
+    resultquiz.save().then((result) => {
+
+        if (result.length > 0) {
+            res.send({
+                success: true,
+                record: result
+            })
+        }
+
+        else {
+            res.send({
+                success: false,
+                record: []
+            })
+        }
+
+    });
+
 
 };
 
@@ -537,20 +593,20 @@ exports.save_result_quiz = function (req, res) {
 
 
 //Api for show blance fee
-exports.blance_fee = function(req,res){
-    Fee.find({student_id:req.body.student_id}).then((blance)=>{
+exports.blance_fee = function (req, res) {
+    Fee.find({ student_id: req.body.student_id }).then((blance) => {
 
-        if(blance.length>0){
+        if (blance.length > 0) {
             res.send({
-                success:true,
-                record:blance
+                success: true,
+                record: blance
             })
         }
-        else{
-           res.send({
-            success:false,
-            record:[]
-           })
+        else {
+            res.send({
+                success: false,
+                record: []
+            })
         }
 
     })
@@ -674,21 +730,21 @@ exports.user_list = function (req, res) {
 
 
 
-exports.student_list = function (req, res) {    
+exports.student_list = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
 
             var filter = {
                 $match: {},
             };
-            var  class_id=req.body.class_id
-            if (class_id != "ALL" && class_id != undefined  && class_id != "")   {
+            var class_id = req.body.class_id
+            if (class_id != "ALL" && class_id != undefined && class_id != "") {
                 filter["$match"]["class_id"] = ObjectId(class_id);
             };
 
-           
-            var  status=req.body.status
-            if (status != "ALL" && status != undefined  && status != "") {
+
+            var status = req.body.status
+            if (status != "ALL" && status != undefined && status != "") {
                 filter["$match"]["status"] = Number(status);
             }
 
@@ -696,7 +752,7 @@ exports.student_list = function (req, res) {
 
                 Studnet.aggregate([
                     filter,
-                   
+
                     {
                         $lookup:
                         {
@@ -724,7 +780,7 @@ exports.student_list = function (req, res) {
                     },
 
                 ]).then((student_Array) => {
-                    
+
                     res.render('student_list', {
                         Student: student_Array,
                         msg: req.session.error,
@@ -732,8 +788,8 @@ exports.student_list = function (req, res) {
                         class_data: class_data,
                         moment: moment,
                         //these filter
-                        class_id:class_id,
-                        status:status,
+                        class_id: class_id,
+                        status: status,
                         admin_type: req.session.admin.usertype
                     });
                 })
@@ -749,21 +805,21 @@ exports.student_list = function (req, res) {
 
 
 
-exports.teacher_list = function(req, res){
-    Utils.check_admin_token(req.session.admin, function (response){
-          if(response.success){
-            Teacher.find({}).then((teacher_data)=>{
+exports.teacher_list = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Teacher.find({}).then((teacher_data) => {
 
-                res.render('teacher_list',{
-                    Teacher:teacher_data,
+                res.render('teacher_list', {
+                    Teacher: teacher_data,
                     msg: req.session.error,
                     moment: moment,
                     admin_type: req.session.admin.usertype
 
                 })
             })
-          }
-        
+        }
+
     })
 }
 
@@ -777,64 +833,67 @@ exports.sreport_list = function (req, res) {
             var Filter = {
                 $match: {},
             };
-            var  class_id=req.body.class_id
-            if (class_id != "ALL" && class_id != undefined  && class_id != "")   {
+            var class_id = req.body.class_id
+            if (class_id != "ALL" && class_id != undefined && class_id != "") {
                 Filter["$match"]["class_id"] = ObjectId(class_id);
             };
             Class.find({}).then((Calas_data) => {
-               
-
-              
-                Studnet.aggregate([ 
-                    Filter, 
-                {
-                    $lookup:
-                     {
-                     from: "classes",
-                     localField: "class_id",
-                     foreignField: "_id",
-                     as: "Calas_data"
-                    }
-               },
-               
-                  {$unwind: "$Calas_data"},
 
 
-                  
-                  {$group:{
-                        _id: {class_name: "$Calas_data.name", textstatus: "$textstatus"},
-                         total:{$sum:1}
-                          
-                      }},
-                     
-                      
-                      
-                      {$project:{
-                                           
-                        _id:0,
-                        class_name:"$_id.class_name",
-                        textstatus:"$_id.textstatus",
-                        total:1
-                        
 
-                        
-                        
-                                           
-                      }
-                },
+                Studnet.aggregate([
+                    Filter,
+                    {
+                        $lookup:
+                        {
+                            from: "classes",
+                            localField: "class_id",
+                            foreignField: "_id",
+                            as: "Calas_data"
+                        }
+                    },
 
-             ]).then((student_Array) => {
+                    { $unwind: "$Calas_data" },
 
-             res.render('sreport_list', {
-                    Student: student_Array,
-                    msg: req.session.error,
-                    Calas_data:Calas_data,
-                    class_id:class_id,
-                    moment: moment,
-                    admin_type: req.session.admin.usertype
-                });
+
+
+                    {
+                        $group: {
+                            _id: { class_name: "$Calas_data.name", textstatus: "$textstatus" },
+                            total: { $sum: 1 }
+
+                        }
+                    },
+
+
+
+                    {
+                        $project: {
+
+                            _id: 0,
+                            class_name: "$_id.class_name",
+                            textstatus: "$_id.textstatus",
+                            total: 1
+
+
+
+
+
+                        }
+                    },
+
+                ]).then((student_Array) => {
+
+                    res.render('sreport_list', {
+                        Student: student_Array,
+                        msg: req.session.error,
+                        Calas_data: Calas_data,
+                        class_id: class_id,
+                        moment: moment,
+                        admin_type: req.session.admin.usertype
+                    });
+                })
             })
-        })
         } else {
 
             Utils.redirect_login(req, res);
@@ -901,86 +960,86 @@ exports.exam_list = function (req, res) {
             var filter = {
                 $match: {},
             };
-    
-            var  student_id=req.body.student_id
-            if (student_id != "ALL" && student_id != undefined  && student_id != "")   {
+
+            var student_id = req.body.student_id
+            if (student_id != "ALL" && student_id != undefined && student_id != "") {
                 filter["$match"]["student_id"] = ObjectId(student_id);
             };
 
-            var  subject_id=req.body.subject_id
-            if (subject_id != "ALL" && subject_id != undefined  && subject_id != "")   {
+            var subject_id = req.body.subject_id
+            if (subject_id != "ALL" && subject_id != undefined && subject_id != "") {
                 filter["$match"]["subject_id"] = ObjectId(subject_id);
             };
 
-            var  status=req.body.status
-            if (status != "ALL" && status != undefined  && status != "") {
+            var status = req.body.status
+            if (status != "ALL" && status != undefined && status != "") {
                 filter["$match"]["status"] = Number(status);
             }
-          
-                                   
+
+
             Studnet.find({}).then((student_data) => {
-            Subject.find({}).then((subject_data) => {
+                Subject.find({}).then((subject_data) => {
 
-                Exam.aggregate([
-                    filter,
-                    
+                    Exam.aggregate([
+                        filter,
 
-                    {
-                        $lookup:
+
                         {
-                            from: "students",
-                            localField: "student_id",
-                            foreignField: "_id",
-                            as: "Student_data"
-                        }
-                    },
+                            $lookup:
+                            {
+                                from: "students",
+                                localField: "student_id",
+                                foreignField: "_id",
+                                as: "Student_data"
+                            }
+                        },
 
-                    { $unwind: "$Student_data" },
+                        { $unwind: "$Student_data" },
 
-                    {
-                        $lookup:
                         {
-                            from: "subjects",
-                            localField: "subject_id",
-                            foreignField: "_id",
-                            as: "Subject_data"
-                        }
-                    },
+                            $lookup:
+                            {
+                                from: "subjects",
+                                localField: "subject_id",
+                                foreignField: "_id",
+                                as: "Subject_data"
+                            }
+                        },
 
-                    { $unwind: "$Subject_data" },
+                        { $unwind: "$Subject_data" },
 
-                    {
-                        $project: {
-                            _id: 1,
-                            marks: 1,
-                            student_name: "$Student_data.name",
-                            subject_name: "$Subject_data.name",
-                            status: 1,
-                            sequence_id: 1,
-                            create_date: 1
-                        }
-                    },
+                        {
+                            $project: {
+                                _id: 1,
+                                marks: 1,
+                                student_name: "$Student_data.name",
+                                subject_name: "$Subject_data.name",
+                                status: 1,
+                                sequence_id: 1,
+                                create_date: 1
+                            }
+                        },
 
 
-                ]).then((exam_Array) => {
+                    ]).then((exam_Array) => {
 
-                    res.render('exam_list', {
-                        Exam: exam_Array,
-                        //this lookup
-                        student_data: student_data,
-                        subject_data: subject_data,
-                        msg: req.session.error,
-                        moment: moment,
-                        //these filter
-                        student_id:student_id,
-                        subject_id:subject_id,
-                        status:status,
-                        admin_type: req.session.admin.usertype
-                    });
+                        res.render('exam_list', {
+                            Exam: exam_Array,
+                            //this lookup
+                            student_data: student_data,
+                            subject_data: subject_data,
+                            msg: req.session.error,
+                            moment: moment,
+                            //these filter
+                            student_id: student_id,
+                            subject_id: subject_id,
+                            status: status,
+                            admin_type: req.session.admin.usertype
+                        });
 
+                    })
                 })
             })
-        })
         } else {
 
             Utils.redirect_login(req, res);
@@ -995,61 +1054,61 @@ exports.fee_list = function (req, res) {
         if (response.success) {
             Studnet.find({}).then((student_data) => {
                 Class.find({}).then((class_data) => {
-        
-                        Fee.aggregate([
-                            
-                            
-        
-                            {
-                                $lookup:
-                                {
-                                    from: "students",
-                                    localField: "student_id",
-                                    foreignField: "_id",
-                                    as: "Student_data"
-                                }
-                            },
-        
-                            { $unwind: "$Student_data" },
-        
-                            {
-                                $lookup:
-                                {
-                                    from: "classes",
-                                    localField: "class_id",
-                                    foreignField: "_id",
-                                    as: "Class_data"
-                                }
-                            },
-        
-                            { $unwind: "$Class_data" },
-        
-                            {
-                                $project: {
-                                    _id: 1,
-                                    payment: 1,
-                                    status:1,
-                                    student_name: "$Student_data.name",
-                                    class_name: "$Class_data.name",
-                                    sequence_id: 1,
-                                    create_date: 1
-                                }
-                            },
-        
-                        ]).then((fee_Array) => {
+
+                    Fee.aggregate([
 
 
-                res.render('fee_list', {
-                    Fee: fee_Array,
-                    msg: req.session.error,
-                    student_data:student_data,
-                    class_data:class_data,
-                    moment: moment,
-                    admin_type: req.session.admin.usertype
-                });
+
+                        {
+                            $lookup:
+                            {
+                                from: "students",
+                                localField: "student_id",
+                                foreignField: "_id",
+                                as: "Student_data"
+                            }
+                        },
+
+                        { $unwind: "$Student_data" },
+
+                        {
+                            $lookup:
+                            {
+                                from: "classes",
+                                localField: "class_id",
+                                foreignField: "_id",
+                                as: "Class_data"
+                            }
+                        },
+
+                        { $unwind: "$Class_data" },
+
+                        {
+                            $project: {
+                                _id: 1,
+                                payment: 1,
+                                status: 1,
+                                student_name: "$Student_data.name",
+                                class_name: "$Class_data.name",
+                                sequence_id: 1,
+                                create_date: 1
+                            }
+                        },
+
+                    ]).then((fee_Array) => {
+
+
+                        res.render('fee_list', {
+                            Fee: fee_Array,
+                            msg: req.session.error,
+                            student_data: student_data,
+                            class_data: class_data,
+                            moment: moment,
+                            admin_type: req.session.admin.usertype
+                        });
+                    })
+                })
             })
-        })
-    })
         } else {
 
             Utils.redirect_login(req, res);
@@ -1060,61 +1119,66 @@ exports.fee_list = function (req, res) {
 
 
 
-exports.feereport_list = function(req, res){
-    Utils.check_admin_token(req.session.admin, function (response){
-        if(response.success){
+exports.feereport_list = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
             Class.find({}).then((class_array) => {
 
                 Fee.aggregate([
 
-                {$lookup:
                     {
-                       from: "classes",
-                       localField: "class_id",
-                       foreignField: "_id",
-                       as: "Calas_data"
-                    }
-                 },
-                 
-                 {$unwind: "$Calas_data"},
-                 
-                 {$group:
+                        $lookup:
                         {
-                          _id:{class_name:"$Calas_data.name"},
-                          totalStudent:{$sum:1},
-                          totalPayment: {$sum: "$payment"} 
-                            
-                            }},
-                            
-                 {$project: {
-                    _id:0,
-                    class_name:"$_id.class_name",
-                    totalPayment: 1,
-                    totalStudent:1
-                     
-                     
-                     }} ,          
-                            
-                            
-                            
-                
-            ]).then((fee_date) => {
-                res.render('feereport_list',{
+                            from: "classes",
+                            localField: "class_id",
+                            foreignField: "_id",
+                            as: "Calas_data"
+                        }
+                    },
 
-                    Fee:fee_date,
-                    class:class_array,
-                    msg: req.session.error,
-                    moment: moment,
-                    admin_type: req.session.admin.usertype
+                    { $unwind: "$Calas_data" },
+
+                    {
+                        $group:
+                        {
+                            _id: { class_name: "$Calas_data.name" },
+                            totalStudent: { $sum: 1 },
+                            totalPayment: { $sum: "$payment" }
+
+                        }
+                    },
+
+                    {
+                        $project: {
+                            _id: 0,
+                            class_name: "$_id.class_name",
+                            totalPayment: 1,
+                            totalStudent: 1
+
+
+                        }
+                    },
+
+
+
+
+                ]).then((fee_date) => {
+                    res.render('feereport_list', {
+
+                        Fee: fee_date,
+                        class: class_array,
+                        msg: req.session.error,
+                        moment: moment,
+                        admin_type: req.session.admin.usertype
+                    })
                 })
             })
-            })
-           
+
         }
         else {
             Utils.redirect_login(req, res);
         }
-        
+
     })
 
 }
@@ -1147,53 +1211,56 @@ exports.message_list = function (req, res) {
 
 
 
-exports.quiz_list = function(req,res){
-    Utils.check_admin_token(req.session.admin,function(response){
-        if(response.success){
-          Types_Quiz.find({}).then((quiz_data)=>{
+exports.quiz_list = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Types_Quiz.find({}).then((quiz_data) => {
 
                 Quiz.aggregate([
-              {      
-                    $lookup:{
-                        from:"typequizzes",
-                        localField:"quiz_id",
-                        foreignField:"_id",
-                        as:"data"
-                       
-                        }},
-                        
-                        {$unwind:"$data"},
-                        
-                        {$project:{
-                            _id: 1,
-                            sequence_id:1,
-                            quetion:1,
-                            answer1:1,
-                            answer2:1,
-                            answer3:1,
-                            correct:1,
-                            marks:1,
-                            quiz_name:"$data.name",
-                            create_date: 1
-                            
-                            
-                            
-                            }}
-                        
-                ]).then((quiz_Array)=>{
+                    {
+                        $lookup: {
+                            from: "typequizzes",
+                            localField: "quiz_id",
+                            foreignField: "_id",
+                            as: "data"
 
-            res.render('quiz_list',{
-                Quiz:quiz_Array,
-                msg:req.session.error,
-                quiz_data:quiz_data,
-                moment:moment,
-                admin_type:req.session.admin.usertype
+                        }
+                    },
+
+                    { $unwind: "$data" },
+
+                    {
+                        $project: {
+                            _id: 1,
+                            sequence_id: 1,
+                            quetion: 1,
+                            answer1: 1,
+                            answer2: 1,
+                            answer3: 1,
+                            correct: 1,
+                            marks: 1,
+                            quiz_name: "$data.name",
+                            create_date: 1
+
+
+
+                        }
+                    }
+
+                ]).then((quiz_Array) => {
+
+                    res.render('quiz_list', {
+                        Quiz: quiz_Array,
+                        msg: req.session.error,
+                        quiz_data: quiz_data,
+                        moment: moment,
+                        admin_type: req.session.admin.usertype
+                    });
+                })
             });
-        })
-    });
         }
-        else{
-            Utils.redirect_login(req,res);
+        else {
+            Utils.redirect_login(req, res);
         }
     })
 }
@@ -1210,63 +1277,71 @@ exports.resultQuiz_list = function (req, res) {
 
                 Result_Quiz.aggregate([
 
-                    {$lookup:{
-                        from:"classes",
-                        localField:"class_id",
-                        foreignField:"_id",
-                        as:"class_data"
-                        
-                        }},
-                        
-                        {$unwind:"$class_data"},
+                    {
+                        $lookup: {
+                            from: "classes",
+                            localField: "class_id",
+                            foreignField: "_id",
+                            as: "class_data"
+
+                        }
+                    },
+
+                    { $unwind: "$class_data" },
 
 
-                        {$lookup:{
-                            from:"subjects",
-                            localField:"subject_id",
-                            foreignField:"_id",
-                            as:"subject_data"
-                            
-                            }},
-                            
-                            {$unwind:"$subject_data"},
-                        
-                                {$lookup:{
-                                    from:"typequizzes",
-                                    localField:"quiz_id",
-                                    foreignField:"_id",
-                                    as:"quiz_data"
-                                    
-                                    }},
-                                    
-                                    {$unwind:"$quiz_data"},
+                    {
+                        $lookup: {
+                            from: "subjects",
+                            localField: "subject_id",
+                            foreignField: "_id",
+                            as: "subject_data"
 
-                        {$project:{
-                            _id:1,
-                            sequence_id:1,
-                            name:1,
-                            correct:1,
-                            wrong:1,
-                            marks:1,
-                            create_date:1,
-                            Class_name:"$class_data.name",
-                            Subject_name:"$subject_data.name",
-                            Quiz_name:"$quiz_data.name"
-                            
-                            }}
-                    
-                    
-                    ]).then((all_data)=>{
+                        }
+                    },
+
+                    { $unwind: "$subject_data" },
+
+                    {
+                        $lookup: {
+                            from: "typequizzes",
+                            localField: "quiz_id",
+                            foreignField: "_id",
+                            as: "quiz_data"
+
+                        }
+                    },
+
+                    { $unwind: "$quiz_data" },
+
+                    {
+                        $project: {
+                            _id: 1,
+                            sequence_id: 1,
+                            name: 1,
+                            correct: 1,
+                            wrong: 1,
+                            marks: 1,
+                            create_date: 1,
+                            Class_name: "$class_data.name",
+                            Subject_name: "$subject_data.name",
+                            Quiz_name: "$quiz_data.name"
+
+                        }
+                    }
 
 
-                res.render('resultQuiz_list', {
-                    ResultQuiz: all_data,
-                    msg: req.session.error,
-                    moment: moment,
-                    class_Data:class_Data,
-                    admin_type: req.session.admin.usertype
-                });
-            })
+                ]).then((all_data) => {
+
+
+                    res.render('resultQuiz_list', {
+                        ResultQuiz: all_data,
+                        msg: req.session.error,
+                        moment: moment,
+                        class_Data: class_Data,
+                        admin_type: req.session.admin.usertype
+                    });
+                })
             })
         } else {
 
@@ -1286,62 +1361,68 @@ exports.typequiz_list = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             Class.find({}).then((class_data) => {
-                Subject.find({}).then((subject_data)=>{
-
-                
-
-                Types_Quiz.aggregate([
+                Subject.find({}).then((subject_data) => {
 
 
-                    {$lookup:{
-                        from:"classes",
-                        localField:"class_id",
-                        foreignField:"_id",
-                        as:"data"
-                        
-                        
-                        }},
-                        
-                        {$unwind:"$data"},
 
-                        {$lookup:{
-                            from:"subjects",
-                            localField:"subject_id",
-                            foreignField:"_id",
-                            as:"Data"
-                            
-                            
-                            }},
-                            
-                            {$unwind:"$Data"},
-                        
-                        {$project:{
-                            _id:1,
-                            sequence_id:1,
-                            name:1,
-                            status:1,
-                            class_name:"$data.name",
-                            subject_name:"$Data.name",
-                            create_date: 1
-                            
-                            
-                            }}
-                    
-                    ]).then((all_data)=>{
+                    Types_Quiz.aggregate([
 
-                    
 
-                res.render('typequiz_list', {
-                    typequiz: all_data,
-                    msg: req.session.error,
-                    moment: moment,
-                    class_data:class_data,
-                    subject_data:subject_data,
-                    admin_type: req.session.admin.usertype
-                });
+                        {
+                            $lookup: {
+                                from: "classes",
+                                localField: "class_id",
+                                foreignField: "_id",
+                                as: "data"
+
+
+                            }
+                        },
+
+                        { $unwind: "$data" },
+
+                        {
+                            $lookup: {
+                                from: "subjects",
+                                localField: "subject_id",
+                                foreignField: "_id",
+                                as: "Data"
+
+
+                            }
+                        },
+
+                        { $unwind: "$Data" },
+
+                        {
+                            $project: {
+                                _id: 1,
+                                sequence_id: 1,
+                                name: 1,
+                                status: 1,
+                                class_name: "$data.name",
+                                subject_name: "$Data.name",
+                                create_date: 1
+
+
+                            }
+                        }
+
+                    ]).then((all_data) => {
+
+
+
+                        res.render('typequiz_list', {
+                            typequiz: all_data,
+                            msg: req.session.error,
+                            moment: moment,
+                            class_data: class_data,
+                            subject_data: subject_data,
+                            admin_type: req.session.admin.usertype
+                        });
+                    })
+                })
             })
-            })
-        })
         } else {
 
             Utils.redirect_login(req, res);
@@ -1386,18 +1467,18 @@ exports.add_student = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             Class.find({}).then((class_Array) => {
-            
 
-            
-               
+
+
+
                 res.render("add_student",
                     {
                         systen_urls: systen_urls, msg: req.session.error,
                         class_data: class_Array
-                       
+
                     })
-            
-        })
+
+            })
         } else {
             Utils.redirect_login(req, res);
         }
@@ -1407,15 +1488,15 @@ exports.add_student = function (req, res) {
 
 
 
-exports.add_teacher = function(req, res){
-    Utils.check_admin_token(req.session.admin, function (response){
-        if(response.success){
-            res.render('add_teacher',{
+exports.add_teacher = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            res.render('add_teacher', {
                 systen_urls: systen_urls, msg: req.session.error
             })
         }
-        else{
-            Utils.redirect_login(req,res)
+        else {
+            Utils.redirect_login(req, res)
         }
     })
 }
@@ -1461,24 +1542,24 @@ exports.add_exam = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             Subject.find({}).then((subject_Array) => {
-            Studnet.find({}).then((student_Array) => {
-    
-                  
-            res.render("add_exam",
-                {
-                    systen_urls: systen_urls, msg: req.session.error,
-                    subject_data: subject_Array,
-                    student_data: student_Array
-                })
-       
-            })
-        });
+                Studnet.find({}).then((student_Array) => {
 
-            }
-        
-            
-            else {
-                Utils.redirect_login(req, res);
+
+                    res.render("add_exam",
+                        {
+                            systen_urls: systen_urls, msg: req.session.error,
+                            subject_data: subject_Array,
+                            student_data: student_Array
+                        })
+
+                })
+            });
+
+        }
+
+
+        else {
+            Utils.redirect_login(req, res);
         };
     });
 
@@ -1486,29 +1567,29 @@ exports.add_exam = function (req, res) {
 
 
 //Select two dropdown list in add payment
-exports.get_all_classess=function(req, res){
+exports.get_all_classess = function (req, res) {
     // console.log("jjjjjjjjjjjjjjjjjjjjj", req.body)
-    Studnet.findOne({_id: ObjectId(req.body._id)}).then((data)=>{
+    Studnet.findOne({ _id: ObjectId(req.body._id) }).then((data) => {
 
-        Class.find({}).then((cls)=>{
+        Class.find({}).then((cls) => {
 
-        if(cls.length>0){
-            res.send({
-                student:data,
-                success:true,
-                class:cls
-               })
-        }else{
-            res.send({
-                student:[],
-                success:false,
-                class:[]
+            if (cls.length > 0) {
+                res.send({
+                    student: data,
+                    success: true,
+                    class: cls
+                })
+            } else {
+                res.send({
+                    student: [],
+                    success: false,
+                    class: []
 
-               })
-        }
-  
+                })
+            }
+
+        })
     })
-})
 
 }
 
@@ -1520,17 +1601,17 @@ exports.add_fee = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             Studnet.find({}).then((student_Array) => {
-            Class.find({}).then((class_Array) => {
+                Class.find({}).then((class_Array) => {
 
-           
-            res.render("add_fee",
-                {
-                    systen_urls: systen_urls, msg: req.session.error,
-                    Student_data: student_Array,
-                    Class_data:class_Array
+
+                    res.render("add_fee",
+                        {
+                            systen_urls: systen_urls, msg: req.session.error,
+                            Student_data: student_Array,
+                            Class_data: class_Array
+                        })
                 })
-            })   
-        })
+            })
         } else {
             Utils.redirect_login(req, res);
         }
@@ -1562,16 +1643,16 @@ exports.add_message = function (req, res) {
 exports.add_quiz = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
-            Types_Quiz.find({}).then((quiz)=>{
+            Types_Quiz.find({}).then((quiz) => {
 
-          
-            res.render("add_quiz",
-                {
-                    systen_urls: systen_urls, msg: req.session.error,
-                    Quiz_data:quiz
-                })
+
+                res.render("add_quiz",
+                    {
+                        systen_urls: systen_urls, msg: req.session.error,
+                        Quiz_data: quiz
+                    })
             })
-                
+
         } else {
             Utils.redirect_login(req, res);
         }
@@ -1585,18 +1666,18 @@ exports.add_quiz = function (req, res) {
 exports.add_typequiz = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
-            Subject.find({}).then((subject_data)=>{
-                Class.find({}).then((class_data)=>{
+            Subject.find({}).then((subject_data) => {
+                Class.find({}).then((class_data) => {
 
-             
-            res.render("add_typequiz",
-                {
-                    systen_urls: systen_urls, msg: req.session.error,
-                    Subject_data:subject_data,
-                    Class_data:class_data
+
+                    res.render("add_typequiz",
+                        {
+                            systen_urls: systen_urls, msg: req.session.error,
+                            Subject_data: subject_data,
+                            Class_data: class_data
+                        })
                 })
             })
-        })
         } else {
             Utils.redirect_login(req, res);
         }
@@ -1613,7 +1694,7 @@ exports.save_admin_details = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             Admin.findOne({ "phone": req.body.phone }).then((admin) => {
-                
+
                 if (admin) {
                     req.session.error = "Sorry, There is an admin with this phone, please check the phone";
                     Utils.redirect_login(req, res);
@@ -1658,10 +1739,10 @@ exports.save_admin_details = function (req, res) {
                             fs.readFile(req.files[0].path, function (err, data) {
                                 fs.writeFile(url, data, 'binary', function (err) { });
                                 fs.unlink(req.files[0].path, function (err, file) {
-                    
+
                                 });
                             });
-                            
+
                             admin.picture = liner;
                         }
                         admin.save().then((admin) => {
@@ -1716,26 +1797,26 @@ exports.save_user_data = function (req, res) {
                             password: Bcrypt.hashSync(req.body.password, 10)
                         });
                         if (profile_file != undefined && profile_file.length > 0) {
-                           // var image_name = user._id + Utils.tokenGenerator(4);
-                           // var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
-                           // Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
-                            
+                            // var image_name = user._id + Utils.tokenGenerator(4);
+                            // var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
+                            // Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
 
-                           /// inser images
-                           image_name = Utils.tokenGenerator(29) + '.jpg';
-                           //v
-                           url = "./uploads/admin_profile/" + image_name;
-                           liner = "admin_profile/" + image_name;
-                           // console.log("linear", liner)
-                           // console.log("url", url)
-                           fs.readFile(req.files[0].path, function (err, data) {
-                               fs.writeFile(url, data, 'binary', function (err) { });
-                               fs.unlink(req.files[0].path, function (err, file) {
-                   
-                               });
-                           });
-                           
-                           user.picture = liner;
+
+                            /// inser images
+                            image_name = Utils.tokenGenerator(29) + '.jpg';
+                            //v
+                            url = "./uploads/admin_profile/" + image_name;
+                            liner = "admin_profile/" + image_name;
+                            // console.log("linear", liner)
+                            // console.log("url", url)
+                            fs.readFile(req.files[0].path, function (err, data) {
+                                fs.writeFile(url, data, 'binary', function (err) { });
+                                fs.unlink(req.files[0].path, function (err, file) {
+
+                                });
+                            });
+
+                            user.picture = liner;
                         }
                         user.save().then((admin) => {
                             req.session.error = "Congrates, Admin was created successfully.........";
@@ -1793,14 +1874,14 @@ exports.save_student_data = function (req, res) {
                             class_id: req.body.class_id,
                             picture: "",
                             user_name: req.body.user_name,
-                            PassWord:req.body.password,
+                            PassWord: req.body.password,
                             password: Bcrypt.hashSync(req.body.password, 10)
                         });
                         if (profile_file != undefined && profile_file.length > 0) {
                             //var image_name = student._id + Utils.tokenGenerator(4);
                             //var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
-                           // Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
-                           
+                            // Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
+
 
                             /// inser images
                             image_name = Utils.tokenGenerator(29) + '.jpg';
@@ -1812,10 +1893,10 @@ exports.save_student_data = function (req, res) {
                             fs.readFile(req.files[0].path, function (err, data) {
                                 fs.writeFile(url, data, 'binary', function (err) { });
                                 fs.unlink(req.files[0].path, function (err, file) {
-                    
+
                                 });
                             });
-                            
+
                             student.picture = liner;
                         }
                         student.save().then((admin) => {
@@ -1867,19 +1948,19 @@ exports.save_teacher_data = function (req, res) {
                             sequence_id: Utils.get_unique_id(),
                             email: req.body.email,
                             phone: req.body.phone,
-                            fee:req.body.fee,
+                            fee: req.body.fee,
                             status: 1,
                             extra_detail: req.body.extra_detail,
                             picture: "",
                             user_name: req.body.user_name,
-                            PassWord:req.body.password,
+                            PassWord: req.body.password,
                             password: Bcrypt.hashSync(req.body.password, 10)
                         });
                         if (profile_file != undefined && profile_file.length > 0) {
                             //var image_name = student._id + Utils.tokenGenerator(4);
                             //var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
-                           // Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
-                           
+                            // Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
+
 
                             /// inser images
                             image_name = Utils.tokenGenerator(29) + '.jpg';
@@ -1891,10 +1972,10 @@ exports.save_teacher_data = function (req, res) {
                             fs.readFile(req.files[0].path, function (err, data) {
                                 fs.writeFile(url, data, 'binary', function (err) { });
                                 fs.unlink(req.files[0].path, function (err, file) {
-                    
+
                                 });
                             });
-                            
+
                             teacher.picture = liner;
                         }
                         teacher.save().then((admin) => {
@@ -1925,24 +2006,24 @@ exports.save_class_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         console.log("hhhhhh", req.body)
         if (response.success) {
-           
-                    // Validate against a password string
-                   
-                        var name = req.body.name
-                        var clas = new Class({
-                            name: name,
-                            sequence_id: Utils.get_unique_id(),
-                            status: 1
-                        });
-                   
-                        clas.save().then((admin) => {
-                            req.session.error = "Congrates, Admin was created successfully.........";
-                            res.redirect("/class_list");
-                        });
-                    
-                
-                
-            
+
+            // Validate against a password string
+
+            var name = req.body.name
+            var clas = new Class({
+                name: name,
+                sequence_id: Utils.get_unique_id(),
+                status: 1
+            });
+
+            clas.save().then((admin) => {
+                req.session.error = "Congrates, Admin was created successfully.........";
+                res.redirect("/class_list");
+            });
+
+
+
+
         } else {
             Utils.redirect_login(req, res);
         }
@@ -1960,22 +2041,22 @@ exports.save_subject_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         console.log("body", req.body)
         if (response.success) {
-           
-        
-                        var name = req.body.name
-                        var subject = new Subject({
-                            name: name,
-                            sequence_id: Utils.get_unique_id(),
-                            status: 1
-                          
-                        });
-                        subject.save().then((admin) => {
-                            req.session.error = "Congrates, Admin was created successfully.........";
-                            res.redirect("/subject_list");
-                        });
-                   
-                
-        
+
+
+            var name = req.body.name
+            var subject = new Subject({
+                name: name,
+                sequence_id: Utils.get_unique_id(),
+                status: 1
+
+            });
+            subject.save().then((admin) => {
+                req.session.error = "Congrates, Admin was created successfully.........";
+                res.redirect("/subject_list");
+            });
+
+
+
         } else {
             Utils.redirect_login(req, res);
         }
@@ -1992,29 +2073,29 @@ exports.save_exam_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         console.log("body", req.body)
         if (response.success) {
-          
-                    
-                        
-                        var marks = req.body.marks
-                        var exam = new Exam({
-                            
-                            sequence_id: Utils.get_unique_id(),
-                            marks: marks,
-                            status: 1,
-                            subject_id: req.body.subject_id,
-                            student_id: req.body.student_id,
 
-                         
-                            
-                        });
-                      
-                        exam.save().then((admin) => {
-                            req.session.error = "Congrates, Admin was created successfully.........";
-                            res.redirect("/exam_list");
-                        });
+
+
+            var marks = req.body.marks
+            var exam = new Exam({
+
+                sequence_id: Utils.get_unique_id(),
+                marks: marks,
+                status: 1,
+                subject_id: req.body.subject_id,
+                student_id: req.body.student_id,
+
+
+
+            });
+
+            exam.save().then((admin) => {
+                req.session.error = "Congrates, Admin was created successfully.........";
+                res.redirect("/exam_list");
+            });
         }
-           
-         else {
+
+        else {
             Utils.redirect_login(req, res);
         }
     });
@@ -2030,28 +2111,28 @@ exports.save_fee_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         console.log("body", req.body)
         if (response.success) {
-          
-                    
-                        
-                        var payment = req.body.payment
-                        var fee = new Fee({
-                            
-                            sequence_id: Utils.get_unique_id(),
-                            payment: payment,
-                            status: 1,
-                            student_id: req.body.student_id,
-                            class_id: req.body.class_id,
 
-                         
-                        });
-                      
-                        fee.save().then((admin) => {
-                            req.session.error = "Congrates, Admin was created successfully.........";
-                            res.redirect("/fee_list");
-                        });
+
+
+            var payment = req.body.payment
+            var fee = new Fee({
+
+                sequence_id: Utils.get_unique_id(),
+                payment: payment,
+                status: 1,
+                student_id: req.body.student_id,
+                class_id: req.body.class_id,
+
+
+            });
+
+            fee.save().then((admin) => {
+                req.session.error = "Congrates, Admin was created successfully.........";
+                res.redirect("/fee_list");
+            });
         }
-           
-         else {
+
+        else {
             Utils.redirect_login(req, res);
         }
     });
@@ -2068,14 +2149,14 @@ exports.save_message_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         console.log("body", req.body)
         if (response.success) {
-            Studnet.find({}).then((std)=>{
-                if(std.length>0){
-                    std.forEach(each_std=>{
-                        if(each_std.token){
-                            var data={
-                                "title":req.body.title,
-                                "token":each_std.token,
-                                "message":req.body.message
+            Studnet.find({}).then((std) => {
+                if (std.length > 0) {
+                    std.forEach(each_std => {
+                        if (each_std.token) {
+                            var data = {
+                                "title": req.body.title,
+                                "token": each_std.token,
+                                "message": req.body.message
                             }
                             Utils.send_notification(data, function (response) {
 
@@ -2086,23 +2167,23 @@ exports.save_message_data = function (req, res) {
                     })
                 }
             })
-           
 
-                        var title = req.body.title
-                        var message = new Message({
-                            title: title,
-                            message:req.body.message,
-                            sequence_id: Utils.get_unique_id(),
-                            
-                          
-                        });
-                        message.save().then((admin) => {
-                            req.session.error = "Congrates, Admin was created successfully.........";
-                            res.redirect("/message_list");
-                        });
-                   
-                
-        
+
+            var title = req.body.title
+            var message = new Message({
+                title: title,
+                message: req.body.message,
+                sequence_id: Utils.get_unique_id(),
+
+
+            });
+            message.save().then((admin) => {
+                req.session.error = "Congrates, Admin was created successfully.........";
+                res.redirect("/message_list");
+            });
+
+
+
         } else {
             Utils.redirect_login(req, res);
         }
@@ -2120,30 +2201,30 @@ exports.save_quiz_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         console.log("body", req.body)
         if (response.success) {
-          
-      
-                        var quetion = req.body.quetion
-                        var quiz = new Quiz({
-                            
-                            sequence_id: Utils.get_unique_id(),
-                            quetion: quetion,
-                            answer1:req.body.answer1,
-                            answer2:req.body.answer2,
-                            answer3:req.body.answer3,
-                            correct:req.body.correct,
-                            marks:req.body.marks,
-                            quiz_id: req.body.quiz_id,
 
-                         
-                        });
-                      
-                        quiz.save().then((admin) => {
-                            req.session.error = "Congrates, Admin was created successfully.........";
-                            res.redirect("/quiz_list");
-                        });
+
+            var quetion = req.body.quetion
+            var quiz = new Quiz({
+
+                sequence_id: Utils.get_unique_id(),
+                quetion: quetion,
+                answer1: req.body.answer1,
+                answer2: req.body.answer2,
+                answer3: req.body.answer3,
+                correct: req.body.correct,
+                marks: req.body.marks,
+                quiz_id: req.body.quiz_id,
+
+
+            });
+
+            quiz.save().then((admin) => {
+                req.session.error = "Congrates, Admin was created successfully.........";
+                res.redirect("/quiz_list");
+            });
         }
-           
-         else {
+
+        else {
             Utils.redirect_login(req, res);
         }
     });
@@ -2159,29 +2240,29 @@ exports.save_quiz_data = function (req, res) {
 
 exports.save_typequiz_data = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
-        console.log("ggg",req.body);
+        console.log("ggg", req.body);
         if (response.success) {
-          
-      
-                        var name = req.body.name
-                        var typequiz = new Types_Quiz({
-                            
-                            sequence_id: Utils.get_unique_id(),
-                            name: name,
-                            class_id:req.body.class_id,
-                            subject_id:req.body.subject_id,
-                            status: 1,
 
-                         
-                        });
-                      
-                        typequiz.save().then((admin) => {
-                            req.session.error = "Congrates, Admin was created successfully.........";
-                            res.redirect("/typequiz_list");
-                        });
+
+            var name = req.body.name
+            var typequiz = new Types_Quiz({
+
+                sequence_id: Utils.get_unique_id(),
+                name: name,
+                class_id: req.body.class_id,
+                subject_id: req.body.subject_id,
+                status: 1,
+
+
+            });
+
+            typequiz.save().then((admin) => {
+                req.session.error = "Congrates, Admin was created successfully.........";
+                res.redirect("/typequiz_list");
+            });
         }
-           
-         else {
+
+        else {
             Utils.redirect_login(req, res);
         }
     });
@@ -2235,34 +2316,34 @@ exports.edit_user = function (req, res) {
 //// handle edit student info
 exports.edit_student = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
-        
+
         if (response.success) {
             Studnet.findOne({ _id: req.body.student_id }, { password: 0 }).then((student) => {
-        
-                const class_id =(student.class_id);
-             console.log("hhhhhhhhhh", class_id)
-            
-            Class.find({}).then((class_data) => {
-                
-             
-                if (student) {
-                    // console.log("hhhhh",student_data)
-                    res.render("add_student", { student_data: student, class_id:class_id.toString(),  Class:class_data,   systen_urls: systen_urls})
-                         
-                } else {
-                    res.redirect("/student_list")
-                }
-                
-            }) 
-             
-            
+
+                const class_id = (student.class_id);
+                console.log("hhhhhhhhhh", class_id)
+
+                Class.find({}).then((class_data) => {
+
+
+                    if (student) {
+                        // console.log("hhhhh",student_data)
+                        res.render("add_student", { student_data: student, class_id: class_id.toString(), Class: class_data, systen_urls: systen_urls })
+
+                    } else {
+                        res.redirect("/student_list")
+                    }
+
+                })
+
+
 
             });
-            
+
         } else {
             Utils.redirect_login(req, res);
         }
-        
+
     });
 };
 
@@ -2321,7 +2402,7 @@ exports.edit_subject = function (req, res) {
 
                 if (subject) {
                     // console.log(admin)
-                    res.render("add_subject", { subject_data:subject , systen_urls: systen_urls })
+                    res.render("add_subject", { subject_data: subject, systen_urls: systen_urls })
                 } else {
                     res.redirect("/subject_list")
                 }
@@ -2341,20 +2422,20 @@ exports.edit_exam = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             Exam.findOne({ _id: req.body.exam_id }, { password: 0 }).then((exam) => {
-                 Studnet.find({}).then((student) => {
-            Subject.find({}).then((subject) => {
+                Studnet.find({}).then((student) => {
+                    Subject.find({}).then((subject) => {
 
-            
 
-           
-                if (exam) {
-                    // console.log(admin)
-                    res.render("add_exam", { exam_data: exam, Student:student, student_id:exam.student_id.toString(), Subject: subject, subject_id:exam.subject_id.toString(), systen_urls: systen_urls })
-                } else {
-                    res.redirect("/exam_list")
-                }
-            })
-            })
+
+
+                        if (exam) {
+                            // console.log(admin)
+                            res.render("add_exam", { exam_data: exam, Student: student, student_id: exam.student_id.toString(), Subject: subject, subject_id: exam.subject_id.toString(), systen_urls: systen_urls })
+                        } else {
+                            res.redirect("/exam_list")
+                        }
+                    })
+                })
             });
         } else {
             Utils.redirect_login(req, res);
@@ -2371,17 +2452,17 @@ exports.edit_fee = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             Fee.findOne({ _id: req.body.fee_id }, { password: 0 }).then((fee) => {
-                 Studnet.find({}).then((student) => {
-              Class.find({}).then((clas) => {
+                Studnet.find({}).then((student) => {
+                    Class.find({}).then((clas) => {
 
-                if (fee) {
-                    // console.log(admin)
-                    res.render("add_fee", { fee_data: fee, Student:student, student_id:fee.student_id.toString(), Class:clas, class_id:fee.class_id.toString(), systen_urls: systen_urls })
-                } else {
-                    res.redirect("/fee_list")
-                }
-            })
-            })
+                        if (fee) {
+                            // console.log(admin)
+                            res.render("add_fee", { fee_data: fee, Student: student, student_id: fee.student_id.toString(), Class: clas, class_id: fee.class_id.toString(), systen_urls: systen_urls })
+                        } else {
+                            res.redirect("/fee_list")
+                        }
+                    })
+                })
             });
         } else {
             Utils.redirect_login(req, res);
@@ -2401,19 +2482,19 @@ exports.edit_typequiz = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             Types_Quiz.findOne({ _id: req.body.typequiz_id }, { password: 0 }).then((type) => {
-                Class.find({}).then((Class)=>{
-                    Subject.find({}).then((Subject)=>{
+                Class.find({}).then((Class) => {
+                    Subject.find({}).then((Subject) => {
 
-                
 
-                if (type) {
-                    // console.log(admin)
-                    res.render("add_typequiz", { typequiz_data:type ,Class:Class,class_id:type.class_id.toString(), Subject:Subject,subject_id:type.subject_id.toString(), systen_urls: systen_urls })
-                } else {
-                    res.redirect("/typequiz_list")
-                }
-            })
-        })
+
+                        if (type) {
+                            // console.log(admin)
+                            res.render("add_typequiz", { typequiz_data: type, Class: Class, class_id: type.class_id.toString(), Subject: Subject, subject_id: type.subject_id.toString(), systen_urls: systen_urls })
+                        } else {
+                            res.redirect("/typequiz_list")
+                        }
+                    })
+                })
             });
         } else {
             Utils.redirect_login(req, res);
@@ -2524,33 +2605,33 @@ exports.update_student_details = function (req, res) {
             var profile_file = req.files;
             req.body.name = req.body.name.split(' ').map(w => w[0].toUpperCase() + w.substr(1).toLowerCase()).join(' ');
             if (profile_file == '' || profile_file == 'undefined') {
-                   
-                const status =Number( req.body.status);
-                    
-                if(status === 1){
-                 var data={
-                    type:req.body.type,
-                    name:req.body.name,
-                    email:req.body.email,
-                    class_id:req.body.class_id, 
-                    status:status,
-                    phone:req.body.phone,
-                    textstatus:"Active"
-                 }
+
+                const status = Number(req.body.status);
+
+                if (status === 1) {
+                    var data = {
+                        type: req.body.type,
+                        name: req.body.name,
+                        email: req.body.email,
+                        class_id: req.body.class_id,
+                        status: status,
+                        phone: req.body.phone,
+                        textstatus: "Active"
+                    }
                 }
-                else if(status === 0){
-                    var data={
-                        type:req.body.type,
-                        name:req.body.name,
-                        email:req.body.email,
-                        phone:req.body.phone,
-                        class_id:req.body.class_id, 
-                        status:status,
-                        textstatus:"Inactive"
-                     }
+                else if (status === 0) {
+                    var data = {
+                        type: req.body.type,
+                        name: req.body.name,
+                        email: req.body.email,
+                        phone: req.body.phone,
+                        class_id: req.body.class_id,
+                        status: status,
+                        textstatus: "Inactive"
+                    }
                 }
 
-                Studnet.findByIdAndUpdate(req.body.student_id,data, { useFindAndModify: false }).then((data) => {
+                Studnet.findByIdAndUpdate(req.body.student_id, data, { useFindAndModify: false }).then((data) => {
                     if (data._id.equals(req.session.admin.student_id)) {
                         Utils.redirect_login(req, res);
                     } else {
@@ -2568,38 +2649,38 @@ exports.update_student_details = function (req, res) {
                     var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
                     Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
                     req.body.picture = url;
-                    
+
                     const status = req.body.status;
-                    
-                        if(status == 1){
-                         var data={
-                            type:req.body.type,
-                            name:req.body.name,
-                            email:req.body.email,
-                            phone:req.body.phone,
-                            class_id:req.body.class_id, 
-                            status:status,
 
-                            textstatus:"Active"
-                         }
+                    if (status == 1) {
+                        var data = {
+                            type: req.body.type,
+                            name: req.body.name,
+                            email: req.body.email,
+                            phone: req.body.phone,
+                            class_id: req.body.class_id,
+                            status: status,
+
+                            textstatus: "Active"
                         }
-                        else if(status == 0){
-                            var data={
-                                type:req.body.type,
-                                name:req.body.name,
-                                email:req.body.email,
-                                class_id:req.body.class_id, 
-                                status:status,
-                                phone:req.body.phone,
-                                textstatus:"Inactive"
-                             }
+                    }
+                    else if (status == 0) {
+                        var data = {
+                            type: req.body.type,
+                            name: req.body.name,
+                            email: req.body.email,
+                            class_id: req.body.class_id,
+                            status: status,
+                            phone: req.body.phone,
+                            textstatus: "Inactive"
                         }
+                    }
 
-                    
-                       
 
-                    
-                    
+
+
+
+
                     // req.body.passport_expire_date = moment(req.body.passport_expire_date).format("MMM Do YYYY");
                     Studnet.findByIdAndUpdate(req.body.student_id, data, { useFindAndModify: true }).then((status) => {
                         if (status._id.equals(req.session.admin.student_id)) {
@@ -2648,7 +2729,7 @@ exports.update_teacher_details = function (req, res) {
                     Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
                     req.body.picture = url;
                     // req.body.passport_expire_date = moment(req.body.passport_expire_date).format("MMM Do YYYY");
-                 Teacher.findByIdAndUpdate(req.body.teacher_id, req.body, { useFindAndModify: false }).then((data) => {
+                    Teacher.findByIdAndUpdate(req.body.teacher_id, req.body, { useFindAndModify: false }).then((data) => {
                         if (data._id.equals(req.session.admin.teacher_id)) {
                             Utils.redirect_login(req, res);
                         } else {
@@ -2765,14 +2846,14 @@ exports.update_subject_detail = function (req, res) {
 
 /// handle update exam info
 exports.update_exam_detail = function (req, res) {
-    console.log("aaaaaaaaa",req.body)
+    console.log("aaaaaaaaa", req.body)
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             var profile_file = req.files;
             // req.body.name = req.body.name.split(' ').map(w => w[0].toUpperCase() + w.substr(1).toLowerCase()).join(' ');
             if (profile_file == '' || profile_file == 'undefined') {
                 Exam.findByIdAndUpdate(req.body.exam_id, req.body, { useFindAndModify: false }).then((data) => {
-                    console.log("aaaaaaaaa",data)
+                    console.log("aaaaaaaaa", data)
                     if (data._id.equals(req.session.admin.exam_id)) {
                         Utils.redirect_login(req, res);
                     } else {
@@ -2814,14 +2895,14 @@ exports.update_exam_detail = function (req, res) {
 
 /// handle update exam info
 exports.update_fee_detail = function (req, res) {
-    
+
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             var profile_file = req.files;
             // req.body.name = req.body.name.split(' ').map(w => w[0].toUpperCase() + w.substr(1).toLowerCase()).join(' ');
             if (profile_file == '' || profile_file == 'undefined') {
                 Fee.findByIdAndUpdate(req.body.fee_id, req.body, { useFindAndModify: false }).then((data) => {
-                
+
                     if (data._id.equals(req.session.admin.fee_id)) {
                         Utils.redirect_login(req, res);
                     } else {
@@ -2865,14 +2946,14 @@ exports.update_fee_detail = function (req, res) {
 
 /// handle update exam info
 exports.update_typequiz_details = function (req, res) {
-    
+
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             var profile_file = req.files;
             // req.body.name = req.body.name.split(' ').map(w => w[0].toUpperCase() + w.substr(1).toLowerCase()).join(' ');
             if (profile_file == '' || profile_file == 'undefined') {
                 Types_Quiz.findByIdAndUpdate(req.body.typequiz_id, req.body, { useFindAndModify: false }).then((type) => {
-                
+
                     if (type._id.equals(req.session.admin.typequiz_id)) {
                         Utils.redirect_login(req, res);
                     } else {
@@ -3064,7 +3145,7 @@ exports.delete_message = function (req, res) {
 exports.delete_quiz = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
-            Quiz.deleteOne({ _id: req.body.quiz_id}).exec().then((user) => {
+            Quiz.deleteOne({ _id: req.body.quiz_id }).exec().then((user) => {
                 res.redirect("/quiz_list")
             });
         } else {
@@ -3082,7 +3163,7 @@ exports.delete_quiz = function (req, res) {
 exports.delete_typequiz = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
-            Types_Quiz.deleteOne({ _id: req.body.typequiz_id}).exec().then((user) => {
+            Types_Quiz.deleteOne({ _id: req.body.typequiz_id }).exec().then((user) => {
                 res.redirect("/typequiz_list")
             });
         } else {

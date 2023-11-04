@@ -867,6 +867,8 @@ exports.sreport_list = function (req, res) {
                     },
 
 
+                    {$sort:{"_id.class_name":1}},
+
 
                     {
                         $project: {
@@ -1468,16 +1470,21 @@ exports.add_student = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             Class.find({}).then((class_Array) => {
+                  
+                Class.aggregate([
 
+                    {$match:{status: 1}}
+                    
+                    ]).then((OnClass)=>{
 
-
-
+                    
                 res.render("add_student",
                     {
                         systen_urls: systen_urls, msg: req.session.error,
-                        class_data: class_Array
+                        class_data: OnClass
 
                     })
+                })
 
             })
         } else {

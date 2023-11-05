@@ -286,7 +286,7 @@ exports.check_admin_login = function (req, res) {
 };
 
 
-//Api for pretical 
+//Api for pretical that get all student
 exports.get_all_students = function (req, res) {
     Studnet.find({}).then((std) => {
         if (std.length > 0) {
@@ -304,7 +304,7 @@ exports.get_all_students = function (req, res) {
 }
 
 
-//APP Apis Login
+//APP Apis Login that check user or password correct or incorect
 exports.use_login = function (req, res) {
 
 
@@ -332,7 +332,7 @@ exports.use_login = function (req, res) {
 
 
 
-//APP Apis Exam Result
+//APP Apis Exam Result that show subject and marks
 exports.exam_result = function (req, res) {
     // console.log("request", req,body)
 
@@ -427,7 +427,7 @@ exports.exam_result = function (req, res) {
 
 
 
-//Api for messages 
+//Api for messages that send message from web to app
 exports.all_messages = function (req, res) {
     Message.find({}).then((messages) => {
         if (messages.length > 0) {
@@ -446,7 +446,7 @@ exports.all_messages = function (req, res) {
 
 
 
-//Api for Change Password
+//Api for Change Password means current password to new password
 exports.change_password = function (req, res) {
     Studnet.findOneAndUpdate({ _id: req.body._id }, { $set: { PassWord: req.body.PassWord } }).then((data) => {
 
@@ -462,7 +462,7 @@ exports.change_password = function (req, res) {
 
 
 
-
+//Api for read quiz
 exports.read_quiz = function (req, res) {
     Types_Quiz.aggregate([
 
@@ -593,7 +593,7 @@ exports.save_result_quiz = function (req, res) {
 
 
 
-//Api for show blance fee
+//Api for show blance fee for student
 exports.blance_fee = function (req, res) {
     Fee.find({ student_id: req.body.student_id }).then((blance) => {
 

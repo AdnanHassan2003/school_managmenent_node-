@@ -41,24 +41,19 @@ exports.admin = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
 
-            User.aggregate([
+            Admin.aggregate([
 
-                {
-                    $group: {
-                        _id: null,
-                        Total_User: { $sum: 1 }
-
-                    }
-                },
-
-                {
-                    $project: {
-                        _id: 0,
-                        Total_User: 1
-                    }
-                }
-
-            ]).then((totalusers) => {
+                {$group:{_id:null,
+                    Total_Admin:{$sum:1}}},
+                    
+                    
+                  {$project:{
+                      _id:0,
+                      Total_Admin:1
+                      
+                      
+                      }}
+                ]).then((totaladmin) => {
 
 
                 Studnet.aggregate([
@@ -118,7 +113,7 @@ exports.admin = function (req, res) {
 
 
                             res.render('home', {
-                                Totalusers: totalusers,
+                                Totaladmin: totaladmin,
                                 Totalsudents: totalsudents,
                                 Totalcass: totalcass,
                                 Totalpayment: totalpayment
@@ -183,25 +178,22 @@ exports.check_admin_login = function (req, res) {
                             picture: admin.picture
                         }
                         req.session.admin = admin_data;
-                        Admin.updateOne({ _id: admin._id }, { token: token, last_login: new Date(Date.now()), login_attempts: 0 }, { useFindAndModify: false }).then((Admin) => {
-                            User.aggregate([
+                        Admin.updateOne({ _id: admin._id }, { token: token, last_login: new Date(Date.now()), login_attempts: 0 }, { useFindAndModify: false }).then((Adminn) => {
 
-                                {
-                                    $group: {
-                                        _id: null,
-                                        Total_User: { $sum: 1 }
+                            Admin.aggregate([
 
-                                    }
-                                },
-
-                                {
-                                    $project: {
-                                        _id: 0,
-                                        Total_User: 1
-                                    }
-                                }
-
-                            ]).then((totalusers) => {
+                                {$group:{_id:null,
+                                    Total_Admin:{$sum:1}}},
+                                    
+                                    
+                                  {$project:{
+                                      _id:0,
+                                      Total_Admin:1
+                                      
+                                      
+                                      }}
+                                ]).then((totaladmin) => {
+                                    
 
 
 
@@ -266,7 +258,7 @@ exports.check_admin_login = function (req, res) {
                                             res.render('home', {
 
 
-                                                Totalusers: totalusers,
+                                                Totaladmin: totaladmin,
                                                 Totalsudents: totalsudents,
                                                 Totalcass: totalcass,
                                                 Totalpayment: totalpayment

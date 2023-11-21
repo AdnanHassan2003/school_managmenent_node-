@@ -2156,7 +2156,7 @@ exports.save_message_data = function (req, res) {
                             var data = {
                                 "title": req.body.title,
                                 "token": each_std.token,
-                                "message": req.body.message
+                                "message":req.body.message
                             }
                             Utils.send_notification(data, function (response) {
 
@@ -2190,6 +2190,9 @@ exports.save_message_data = function (req, res) {
     });
 
 };
+
+
+
 
 
 

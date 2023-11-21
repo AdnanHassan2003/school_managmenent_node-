@@ -14,7 +14,7 @@ app.get('*', function (req, res) {
 
 app.listen(port);
 module.exports = app;
-console.log('Server on ' + port);
+console.log('Server running on port ' + port);
 
 
 

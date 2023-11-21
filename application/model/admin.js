@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 var Schema = mongoose.Schema;
 
-adminschema = new Schema({
+adminschema = new Schema({   //Schema define stracute that will be store database
     sequence_id: {
         type: String,
         unique: true,

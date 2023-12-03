@@ -22,7 +22,7 @@ var Utils = require('../controller/utils');
 var passwordValidator = require('password-validator');
 const { body } = require('express-validator');
 const _class = require('../model/class');
-const { filter, flatMap, has } = require('lodash');
+const { filter, flatMap, has, add } = require('lodash');
 const { title } = require('process')
 const session = require('express-session')
 const { response } = require('express')
@@ -30,7 +30,7 @@ const { type } = require('os')
 const setting = require('../model/setting')
 const { each } = require('async')
 const { utils } = require('xlsx')
-const { group } = require('console')
+const { group, Console } = require('console')
 // const { utils } = require('xlsx/types')
 var ObjectId = require('mongodb').ObjectID;
 
@@ -2475,6 +2475,25 @@ exports.edit_fee = function (req, res) {
 
 
 
+//add other payment or fee
+exports.add = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            Fee.findOne({_id:req.body.feee_id}).then((data)=>{
+            //   console.log("hhhhhhhh",data)
+            res.render("add_fee",
+                {
+                    systen_urls: systen_urls, msg: req.session.error,
+                    All_Fee:data
+                })
+    
+            })
+        } else {
+            res.redirect("/fee_list")
+        }
+    });
+};
+
 
 
 
@@ -2602,7 +2621,6 @@ exports.update_user_detail = function (req, res) {
 
 /// handle update student info
 exports.update_student_details = function (req, res) {
-    // console.log("jjjjjjj", req.body)
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             var profile_file = req.files;
@@ -2898,14 +2916,12 @@ exports.update_exam_detail = function (req, res) {
 
 /// handle update exam info
 exports.update_fee_detail = function (req, res) {
-
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             var profile_file = req.files;
             // req.body.name = req.body.name.split(' ').map(w => w[0].toUpperCase() + w.substr(1).toLowerCase()).join(' ');
             if (profile_file == '' || profile_file == 'undefined') {
                 Fee.findByIdAndUpdate(req.body.fee_id, req.body, { useFindAndModify: false }).then((data) => {
-
                     if (data._id.equals(req.session.admin.fee_id)) {
                         Utils.redirect_login(req, res);
                     } else {
@@ -2944,12 +2960,50 @@ exports.update_fee_detail = function (req, res) {
 
 
 
+/// handle update exam info
+exports.added_fee = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+
+            //new payment to add old payment store database
+            var newPayment = {
+                payment:Number(req.body.payment)
+            }
+            
+            //this fuction make to find the old payment to add new payment
+            Fee.findById({_id:req.body.feee_id}).then((oldPayment)=>{
+                curenPayment = oldPayment.payment
+            
+                var realPayment = {
+                    status:oldPayment.status,
+                    payment:newPayment.payment + curenPayment,
+                    student_id:oldPayment.student_id,
+                    class_id:oldPayment.class_id
+                };
+                Fee.findByIdAndUpdate(req.body.feee_id, realPayment, { useFindAndModify: false }).then((data) => {
+                    if (data._id.equals(req.session.admin.feee_id)) {
+                        Utils.redirect_login(req, res);
+                    } else {
+                        res.redirect("/fee_list");
+                    }
+                }, (err) => {
+                    res.redirect("/fee_list");
+                });
+            });
+            
+        } else {
+            Utils.redirect_login(req, res);
+        }
+    });
+};
+
+
+
 
 
 
 /// handle update exam info
 exports.update_typequiz_details = function (req, res) {
-
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
             var profile_file = req.files;

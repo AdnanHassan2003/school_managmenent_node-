@@ -109,7 +109,7 @@ module.exports = function (app) {
 
 
 
-
+ 
   
 
   app.route('/fee_list').get(adminController.fee_list);
@@ -119,6 +119,8 @@ module.exports = function (app) {
   app.route('/get_all_classess').post(adminController.get_all_classess);
   app.route('/save_fee_data').post(adminController.save_fee_data)
   app.route('/edit_fee').post(adminController.edit_fee)
+  app.route('/add').post(adminController.add)
+  app.route('/added_fee').post(adminController.added_fee)
   app.route('/update_fee_detail').post(adminController.update_fee_detail)
   app.route('/delete_fee').post(adminController.delete_fee);
 

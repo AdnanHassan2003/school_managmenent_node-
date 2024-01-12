@@ -163,6 +163,9 @@
                           <%= process.env.email %>
                         </th>
                         <th>
+                          Gender
+                        </th>
+                        <th>
                           Class Name
                         </th>
                         <th>
@@ -195,10 +198,12 @@
                                 <%= entry.email %>
                               </td>
                               <td>
+                                <%= entry.gender %>
+                              </td>
+                              <td>
                                 <%= entry.class_name %>
                               </td>
                             
-                              
                               <td>
                                 <% if(entry.status=="1" ) { %>
                                   <span class="system-bottons" style="padding: 5px; border-radius: 4px;">

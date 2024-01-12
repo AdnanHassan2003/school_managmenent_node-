@@ -113,6 +113,29 @@
                         required>
                     </div>
 
+                    <div class="form-group">
+                      <label for="gender">
+                        Gender
+                      </label>
+                      <select  id="gender" name="gender" class="form-control" value="<%= student_data.gender %>"
+                        required>
+                        <% if(student_data.gender=="Male" ) { %>
+                        <option value="Male" selected>
+                          Male
+                        </option>
+                        <option value="Female">
+                          Female
+                        </option>
+                        <% } else{ %>
+                          <option value="Male" >
+                            Male
+                          </option>
+                          <option value="Female" selected>
+                            Female
+                          </option>
+                          <% } %>
+                      </select>
+                    </div>
 
                     <div class="form-group" name="status">
                       <label for="status">
@@ -286,6 +309,28 @@
                         </label>
                         <input type="email" id="email" name="email" class="form-control" required>
                       </div>
+                      <div class="form-group">
+                        <label for="gender">
+                          Gender
+                        </label>
+                        <select  id="gender" name="gender" class="form-control">
+                        <option value="Male">
+                          Male
+                        </option>
+                        <option value="Female">
+                          Female
+                        </option>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="gender">
+                          
+                        </label>
+                        <select name="gender" id="gender" class="form-control">
+                          
+                        </select>
+                      </div>
+
                       <div class="form-group">
                         <label for="user_name">
                           <%= process.env.user_name %>

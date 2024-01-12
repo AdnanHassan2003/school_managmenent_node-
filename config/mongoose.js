@@ -26,6 +26,9 @@ module.exports = function () {
     require("../application/model/quiz");
     require("../application/model/resultQuiz");
     require("../application/model/typequiz");
+
+    // waa project transection
+    require("../application/model/login");
     
     return db;
 };

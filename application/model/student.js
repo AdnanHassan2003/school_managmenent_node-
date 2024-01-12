@@ -20,6 +20,9 @@ studentschema = new Schema({
     email: {
         type: String,
     },
+    gender:{
+        type: String
+    },
     user_name: {
         type: String,
     },

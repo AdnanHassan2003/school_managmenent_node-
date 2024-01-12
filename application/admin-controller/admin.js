@@ -17,7 +17,6 @@ var Excel = require('exceljs');
 var fs = require('fs');
 var node_gcm = require("node-gcm")
 var crypto = require('crypto');
-
 var Utils = require('../controller/utils');
 var passwordValidator = require('password-validator');
 const { body } = require('express-validator');
@@ -33,6 +32,12 @@ const { utils } = require('xlsx')
 const { group, Console } = require('console')
 // const { utils } = require('xlsx/types')
 var ObjectId = require('mongodb').ObjectID;
+
+
+
+
+//new app transection
+var Login = require('mongoose').model('login')
 
 
 
@@ -610,6 +615,63 @@ exports.blance_fee = function (req, res) {
 
 
 
+
+
+
+
+//Apis is transection app apis
+exports.registration = function(req,res){
+
+    console.log("ggggggg", req.body)
+    var name = req.body.name
+    var registered = new Login({
+
+        sequence_id: Utils.get_unique_id(),
+        name: name,
+        email: req.body.email,
+        phone:req.body.phone,
+        password:req.body.password
+        
+    });
+
+    registered.save().then((result) => {
+
+        if (result.length > 0) {
+            res.send({
+                success: true,
+                record: result
+            })
+        }
+
+        else {
+            res.send({
+                success: false,
+                record: []
+            })
+        }
+
+    });
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 exports.list_admin = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
@@ -766,6 +828,7 @@ exports.student_list = function (req, res) {
                             status: 1,
                             sequence_id: 1,
                             email: 1,
+                            gender:1,
                             phone: 1,
                             picture: 1,
                             create_date: 1
@@ -1867,6 +1930,7 @@ exports.save_student_data = function (req, res) {
                             name: name,
                             sequence_id: Utils.get_unique_id(),
                             email: req.body.email,
+                            gender:req.body.gender,
                             phone: req.body.phone,
                             status: 1,
                             // textstatus: req.body.textstatus,
@@ -2554,7 +2618,10 @@ exports.update_admin_details = function (req, res) {
                     var image_name = admin._id + Utils.tokenGenerator(4);
                     var url = Utils.getImageFolderPath(1) + image_name + '.jpg';
                     Utils.saveImageIntoFolder(req.files[0].path, image_name + '.jpg', 1);
-                    req.body.picture = url;
+
+                    
+                   
+                            req.body.picture = url;
                     // req.body.passport_expire_date = moment(req.body.passport_expire_date).format("MMM Do YYYY");
                     Admin.findByIdAndUpdate(req.body.admin_id, req.body, { useFindAndModify: false }).then((data) => {
                         if (data._id.equals(req.session.admin.user_id)) {
@@ -2634,6 +2701,7 @@ exports.update_student_details = function (req, res) {
                         type: req.body.type,
                         name: req.body.name,
                         email: req.body.email,
+                        gender:req.body.gender,
                         class_id: req.body.class_id,
                         status: status,
                         phone: req.body.phone,
@@ -2645,6 +2713,7 @@ exports.update_student_details = function (req, res) {
                         type: req.body.type,
                         name: req.body.name,
                         email: req.body.email,
+                        gender:req.body.gender,
                         phone: req.body.phone,
                         class_id: req.body.class_id,
                         status: status,
@@ -2678,6 +2747,7 @@ exports.update_student_details = function (req, res) {
                             type: req.body.type,
                             name: req.body.name,
                             email: req.body.email,
+                            gender:req.body.gender,
                             phone: req.body.phone,
                             class_id: req.body.class_id,
                             status: status,
@@ -2690,6 +2760,7 @@ exports.update_student_details = function (req, res) {
                             type: req.body.type,
                             name: req.body.name,
                             email: req.body.email,
+                            gender:req.body.gender,
                             class_id: req.body.class_id,
                             status: status,
                             phone: req.body.phone,

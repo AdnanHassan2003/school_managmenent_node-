@@ -612,7 +612,7 @@ exports.blance_fee = function (req, res) {
 
 
 
-
+//------------------------------------------------------------------------------------------------------
 
 
 
@@ -658,7 +658,23 @@ exports.registration = function(req,res){
 
 
 
+exports.login = function(req,res){
+    Login.find({email:req.body.email, password:req.body.password}).then((Username)=>{
+        if(Username.length>0){
+            res.send({
+                success:true,
+                record:Username
+            })
+        }
+        else{
+            res.send({
+                success:false,
+                record:[]
+            })
+        }
 
+    })
+}
 
 
 

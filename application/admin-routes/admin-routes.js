@@ -221,5 +221,11 @@ module.exports = function (app) {
     app.route("/blance_fee").post(adminController.blance_fee)
 
 
+
+//--------------------------------------------------------------------------------------------
+
+
     app.route("/registration").post(adminController.registration)
+
+    app.route("/login").post(adminController.login)
 }

@@ -228,4 +228,8 @@ module.exports = function (app) {
     app.route("/registration").post(adminController.registration)
 
     app.route("/login").post(adminController.login)
+
+    app.route("/transectionsave").post(adminController.transectionsave)
+
+    app.route("/transectionread").post(adminController.transectionread)
 }

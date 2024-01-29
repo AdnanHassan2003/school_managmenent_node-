@@ -38,6 +38,8 @@ var ObjectId = require('mongodb').ObjectID;
 
 //new app transection
 var Login = require('mongoose').model('login')
+var Transection = require('mongoose').model('transection')
+
 
 
 
@@ -680,6 +682,60 @@ exports.login = function(req,res){
 
 
 
+
+//Apis is transection app apis
+exports.transectionsave = function(req,res){
+
+    console.log("ggggggg", req.body)
+    var sent = req.body.sent
+    var transection = new Transection({
+
+        sequence_id: Utils.get_unique_id(),
+        sent: sent,
+        received: req.body.received,
+        money:req.body.money,
+        
+    });
+
+    transection.save().then((result) => {
+
+        if (result.length > 0) {
+            res.send({
+                success: false,
+                record: []
+            })
+        }
+
+        else {
+            res.send({
+                success: true,
+                record: result
+                
+            })
+        }
+
+    });
+
+
+}
+
+
+exports.transectionread = function(req,res){
+    Transection.find({}).then((transection)=>{
+      if(transection.length>0){
+        res.send({
+            success:true,
+            record:transection
+        })
+      }
+      else{
+        res.send({
+            success:false,
+            record:[]
+        })
+      }
+    })
+}
 
 
 

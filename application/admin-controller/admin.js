@@ -731,7 +731,7 @@ exports.transectionread = function(req,res){
       else{
         res.send({
             success:false,
-            record:[]
+            record:" "
         })
       }
     })

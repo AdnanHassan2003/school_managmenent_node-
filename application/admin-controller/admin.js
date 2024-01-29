@@ -638,15 +638,16 @@ exports.registration = function(req,res){
 
         if (result.length > 0) {
             res.send({
-                success: true,
-                record: result
+                success: false,
+                record: []
             })
         }
 
         else {
             res.send({
-                success: false,
-                record: []
+                success: true,
+                record: result
+                
             })
         }
 

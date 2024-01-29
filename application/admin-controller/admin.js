@@ -721,7 +721,7 @@ exports.transectionsave = function(req,res){
 
 
 exports.transectionread = function(req,res){
-    Transection.find({}).then((transection)=>{
+    Transection.find({sent:req.body.sent}).then((transection)=>{
       if(transection.length>0){
         res.send({
             success:true,

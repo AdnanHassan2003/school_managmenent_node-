@@ -669,8 +669,8 @@ exports.login = function(req,res){
         }
         else{
             res.send({
-                success:false,
-                record:[]
+                success: false,
+                record: "username or password incorrect"
             })
         }
 

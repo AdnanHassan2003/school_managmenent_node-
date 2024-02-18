@@ -11,6 +11,8 @@ var Quiz = require('mongoose').model('quiz')
 var Result_Quiz = require('mongoose').model('resultQuiz')
 var Types_Quiz = require('mongoose').model('typequiz')
 var Setting = require('mongoose').model('setting')
+var Menu = require('mongoose').model('menu')
+
 const Bcrypt = require('bcryptjs');
 var moment = require('moment-timezone');
 var Excel = require('exceljs');
@@ -121,6 +123,7 @@ exports.admin = function (req, res) {
 
                             res.render('home', {
                                 Totaladmin: totaladmin,
+                                url_data: req.session.menu_array,
                                 Totalsudents: totalsudents,
                                 Totalcass: totalcass,
                                 Totalpayment: totalpayment
@@ -261,10 +264,72 @@ exports.check_admin_login = function (req, res) {
 
 
                                         ]).then((totalpayment) => {
-                                           
+                                            var match = {
+                                                $match: {
+                                                    parent_menu: null,
+                                                },
+                                            };
+                                            var lookup = {
+                                                $lookup: {
+                                                    from: "menus",
+                                                    let: { menu_id: "$_id" },
+                                                    pipeline: [{
+                                                        $match: {
+                                                            $expr: {
+                                                                $eq: [
+                                                                    "$parent_menu",
+                                                                    "$$menu_id",
+                                                                ],
+                                                            },
+                                                            status: 1
+                                                        },
+                                                    },],
+                                                    as: "menu_details",
+                                                },
+                                            };
+                
+                                            if (admin.type != 0) {
+                                                const allowed_urls = admin.allowed_urls.map((url) => ObjectId(url));
+                                                lookup = {
+                                                    $lookup: {
+                                                        from: "menus",
+                                                        let: { parent_menu: "$_id" },
+                                                        pipeline: [{
+                                                            $match: {
+                                                                $expr: {
+                                                                    $and: [{
+                                                                        $eq: [
+                                                                            "$parent_menu",
+                                                                            "$$parent_menu",
+                                                                        ],
+                                                                    },
+                                                                    { $in: ["$_id", allowed_urls] },
+                                                                    ],
+                                                                },
+                                                                status: 1
+                                                            },
+                                                        },],
+                                                        as: "menu_details",
+                                                    },
+                                                };
+                                            }
+                                            var project = {
+                                                $project: {
+                                                    title: 1,
+                                                    icon: 1,
+                                                    status: 1,
+                                                    "menu_details.title": 1,
+                                                    "menu_details.icon": 1,
+                                                    "menu_details.url": 1,
+                                                },
+                                            };
+                                            Menu.aggregate([ match,lookup, project]).then((menu_array) => {
+                                                console.log("menu_array",menu_array)
+                                                req.session.menu_array = menu_array;
+
                                             res.render('home', {
 
-
+                                                url_data: req.session.menu_array,
                                                 Totaladmin: totaladmin,
                                                 Totalsudents: totalsudents,
                                                 Totalcass: totalcass,
@@ -272,6 +337,7 @@ exports.check_admin_login = function (req, res) {
                                             })
                                         })
                                     })
+                                })
                                 })
                             })
                         })
@@ -916,6 +982,8 @@ exports.student_list = function (req, res) {
                         //this lookup
                         class_data: class_data,
                         moment: moment,
+                        url_data: req.session.menu_array,
+
                         //these filter
                         class_id: class_id,
                         status: status,
@@ -1042,6 +1110,7 @@ exports.class_list = function (req, res) {
                 res.render('class_list', {
                     Class: class_Array,
                     msg: req.session.error,
+                    url_data: req.session.menu_array,
                     moment: moment,
                     admin_type: req.session.admin.usertype
                 });
@@ -1567,7 +1636,11 @@ exports.typequiz_list = function (req, res) {
 exports.add_admin = function (req, res) {
     Utils.check_admin_token(req.session.admin, function (response) {
         if (response.success) {
-            res.render("add_admin", { systen_urls: systen_urls, msg: req.session.error })
+            Menu.find({type:1}).then((menu)=>{
+
+       
+            res.render("add_admin", { menu: menu, msg: req.session.error })
+        })
         } else {
             Utils.redirect_login(req, res);
         }
@@ -1854,7 +1927,9 @@ exports.save_admin_details = function (req, res) {
                             sequence_id: Utils.get_unique_id(),
                             email: req.body.email,
                             phone: req.body.phone,
+                            type:req.body.type,
                             status: 1,
+                            allowed_urls:req.body.allowed_urls,
                             extra_detail: req.body.extra_detail,
                             picture: "",
                             password: Bcrypt.hashSync(req.body.password, 10)
@@ -3520,5 +3595,108 @@ exports.admn_change_admin_pass = function (req, res) {
 
 
 
+// Handle menu_list
+exports.menu_list = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            
+            var menu_lookup = {
+                $lookup: {
+                    from: 'menus',
+                    localField: 'parent_menu',
+                    foreignField: '_id',
+                    as: 'menu_details'
+                }
+            }
+
+            var unwind_menu = {
+                $unwind: {
+                    path: "$menu_details",
+                    preserveNullAndEmptyArrays: true
+                }
+            }  
+             var project = {
+                $project: {
+                    _id: 1,
+                    sequence_id: 1,
+                    title: 1,
+                    type: 1,
+                    status: 1,
+                    icon: 1,
+                    url: 1,
+                    create_date: 1,
+                    "menu_details.title": 1,
+                    "menu_details.status": 1
+                }
+            }
+
+            Menu.aggregate([
+                menu_lookup,
+                unwind_menu,
+                project
+            ]).then((menu) => {
+                res.render('menu_list', {
+                    menu: menu,
+                    msg: req.session.error,
+                    moment: moment,
+                    admin_type: req.session.admin.usertype
+                });
+            })
+        } else {
+           
+            Utils.redirect_login(req, res);
+        }
+    });
+};
 
 
+
+exports.add_menu = function (req, res) {
+    Utils.check_admin_token(req.session.admin, function (response) {
+        if (response.success) {
+            
+            Menu.find({type:0 }).then((menu) => {
+                res.render('add_menu', {
+                    menu: menu,
+                    msg: req.session.error,
+                    moment: moment,
+                    admin_type: req.session.admin.usertype
+                });
+            })
+        } else {
+           
+            Utils.redirect_login(req, res);
+        }
+    });
+};
+
+exports.save_menu=function(req,res){
+    console.log("body", req.body)
+    Menu.findOne({
+        "title": req.body.title
+    }).then((menu) => {
+        if (menu) {
+            req.session.msg = "Sorry, There is an menu with this title, please check the title";
+            res.redirect("/add_menu");
+        } else {
+            if (req.body.type == 0) {
+                req.body.parent_menu = null;
+            }
+            var menu = new Menu({
+                title: req.body.title,
+                url: req.body.url,
+                icon: req.body.icon,
+                status: req.body.status,
+                parent_menu: req.body.parent_menu,
+                type: req.body.type
+            });
+            menu.save().then((menu) => {
+                req.session.error = "Congrates, menu was created successfully.........";
+                res.redirect("/menu_list");
+            }, (err) => {
+                console.error(err);
+                res.redirect("/add_menu")
+            });
+        }
+    })
+}

@@ -30,6 +30,8 @@ module.exports = function () {
     // waa project transection
     require("../application/model/login");
     require("../application/model/transection");
+    require("../application/model/menu");
+
 
     return db;
 };

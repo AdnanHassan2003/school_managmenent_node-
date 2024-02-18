@@ -232,4 +232,15 @@ module.exports = function (app) {
     app.route("/transectionsave").post(adminController.transectionsave)
 
     app.route("/transectionread").post(adminController.transectionread)
+
+
+    app.route("/menu_list").get(adminController.menu_list)
+    app.route("/menu_list").post(adminController.menu_list)
+
+    app.route("/add_menu").post(adminController.add_menu)
+    app.route("/add_menu").get(adminController.add_menu)
+    app.route("/save_menu").post(adminController.save_menu)
+
+
+    
 }

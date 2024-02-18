@@ -241,9 +241,9 @@
                           <select id="fselectMulti" class="my-select-box" style="overflow-y:scroll" multiple="multiple"
                             name="allowed_urls[]">
                             <optgroup label="URL List">
-                              <% systen_urls.forEach(function(menu){ %>
-                                <option value="<%= menu%>">
-                                  <%= menu%>
+                              <% menu.forEach(function(item){ %>
+                                <option value="<%= item._id %>">
+                                  <%= item.title%>
                                 </option>
                                 <% }) %>
                             </optgroup>

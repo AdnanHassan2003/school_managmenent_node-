@@ -247,7 +247,7 @@ display: none !important;
         <nav class="mt-2">
           <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
 
-            <li class="nav-item has-treeview" id="dashboard_menu">
+            <!-- <li class="nav-item has-treeview" id="dashboard_menu">
               <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-copy"></i>
                 <p>
@@ -263,10 +263,10 @@ display: none !important;
                   </a>
                 </li>
               </ul>
-            </li>     
+            </li>      -->
 
             <!--setting-->
-            <li class="nav-item has-treeview" id="setting_menu">
+            <!-- <li class="nav-item has-treeview" id="setting_menu">
               <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-cogs"></i>
                 <p>
@@ -279,20 +279,25 @@ display: none !important;
                   <a href="/admin_list" class="nav-link">
                     <p>Admin List</p>
                   </a>
-                </li>  
-                <li class="nav-item" id="admin_list">
+                </li>   -->
+                <!-- <li class="nav-item" id="admin_list">
                   <a href="/user_list" class="nav-link">
                     <p>User List</p>
                   </a>
-                </li>   
+                </li>   -->
+                <!-- <li class="nav-item" id="admin_list">
+                  <a href="/menu_list" class="nav-link">
+                    <p>Menu Lists</p>
+                  </a>
+                </li>  
                 </li>
-              </ul>
+              -->
 
               
             <!--student -->
-              <li class="nav-item has-treeview" id="student_menu">
+              <!-- <li class="nav-item has-treeview" id="student_menu">
                 <a href="#" class="nav-link">
-                   <i class="	fas fa-book-reader"></i> 
+                   <i class="fas fa-book-reader"></i> 
                   <p class="ml-2">
                     Student
                     <i class="fas fa-angle-left right"></i>
@@ -316,11 +321,11 @@ display: none !important;
                     </a>
                   </li>        
                 </ul>
-                </li>
+                </li> -->
 
 
                   <!--class-->
-                  <li class="nav-item has-treeview" id="class_menu">
+                  <!-- <li class="nav-item has-treeview" id="class_menu">
                     <a href="#" class="nav-link">
                       <i class="fas fa-home"></i>
                       <p>
@@ -341,10 +346,10 @@ display: none !important;
                         </a>
                         </li> 
                     </ul>
-                  </li>
+                  </li> -->
 
                 <!--exams -->
-                <li class="nav-item has-treeview" id="exams_menu">
+                <!-- <li class="nav-item has-treeview" id="exams_menu">
                   <a href="#" class="nav-link">
                     <i class="fas fa-edit"></i>
                     <p>
@@ -376,10 +381,10 @@ display: none !important;
                       </a>
                     </li>     
                   </ul>
-                </li>  
+                </li>   -->
 
                 <!--finance-->
-                <li class="nav-item has-treeview" id="finance_menu">
+                <!-- <li class="nav-item has-treeview" id="finance_menu">
                   <a href="#" class="nav-link">
                     <i class="fas fa-money-bill"></i>
                     <p>
@@ -400,10 +405,10 @@ display: none !important;
                       </a>
                     </li>    
                   </ul>
-                </li>   
+                </li>    -->
 
                 <!--contect-->
-                <li class="nav-item has-treeview" id="contect_menu">
+                <!-- <li class="nav-item has-treeview" id="contect_menu">
                   <a href="#" class="nav-link">
                     <i class="fas fa-comment"></i>
             
@@ -420,9 +425,38 @@ display: none !important;
                       </a>
                     </li>
                   </ul>
-                </li> 
+                </li>  -->
                 
-              
+                <% if (typeof url_data !='undefined' && url_data.length> 0) {    %>
+                          
+                  <% url_data.forEach(function(entry) { %>
+                      <% if(entry.menu_details.length  > 0) { %>
+                      <li class="nav-item">
+                          <a href="#" class="nav-link">
+      <i class="<%= entry.icon %>"></i>
+      <p>
+          <%= entry.title %>
+          <i class="fas fa-angle-left right"></i>
+      </p>
+  </a>
+                          <% if (entry.menu_details) { %>
+                              <ul class="nav nav-treeview px-4">
+                                  <% entry.menu_details.forEach(function(s_element) { %>
+                                      <li class="nav-item">
+                                          <a href='<%= s_element.url %>' class="nav-link">
+                                              <p>
+                                                  <%= s_element.title %>
+                                              </p>
+                                          </a>
+                                      </li>
+                                      <% }) %>
+                              </ul>
+                              <% } %>
+                      </li>
+                         <% } %>
+                      <% }) %>
+                             
+                      <% } %>
 
             </li>        
           </ul>

@@ -886,6 +886,7 @@ exports.list_admin = function (req, res) {
             ]).then((admin_array) => {
                 // console.log("lists", admin_array)
                 res.render('admin_list', {
+                    url_data: req.session.menu_array,
                     admins: admin_array,
                     msg: req.session.error,
                     moment: moment,
@@ -1008,6 +1009,7 @@ exports.teacher_list = function (req, res) {
             Teacher.find({}).then((teacher_data) => {
 
                 res.render('teacher_list', {
+                    url_data: req.session.menu_array,
                     Teacher: teacher_data,
                     msg: req.session.error,
                     moment: moment,
@@ -1084,6 +1086,7 @@ exports.sreport_list = function (req, res) {
                 ]).then((student_Array) => {
 
                     res.render('sreport_list', {
+                        url_data: req.session.menu_array,
                         Student: student_Array,
                         msg: req.session.error,
                         Calas_data: Calas_data,
@@ -1133,6 +1136,7 @@ exports.subject_list = function (req, res) {
 
 
                 res.render('subject_list', {
+                    url_data: req.session.menu_array,
                     Subject: subject_Array,
                     msg: req.session.error,
                     moment: moment,
@@ -1224,6 +1228,7 @@ exports.exam_list = function (req, res) {
                     ]).then((exam_Array) => {
 
                         res.render('exam_list', {
+                            url_data: req.session.menu_array,
                             Exam: exam_Array,
                             //this lookup
                             student_data: student_data,
@@ -1299,6 +1304,7 @@ exports.fee_list = function (req, res) {
 
 
                         res.render('fee_list', {
+                            url_data: req.session.menu_array,
                             Fee: fee_Array,
                             msg: req.session.error,
                             student_data: student_data,
@@ -1364,7 +1370,7 @@ exports.feereport_list = function (req, res) {
 
                 ]).then((fee_date) => {
                     res.render('feereport_list', {
-
+                        url_data: req.session.menu_array,
                         Fee: fee_date,
                         class: class_array,
                         msg: req.session.error,
@@ -1394,6 +1400,7 @@ exports.message_list = function (req, res) {
 
 
                 res.render('message_list', {
+                    url_data: req.session.menu_array,
                     Message: message_Array,
                     msg: req.session.error,
                     moment: moment,
@@ -1450,6 +1457,7 @@ exports.quiz_list = function (req, res) {
                 ]).then((quiz_Array) => {
 
                     res.render('quiz_list', {
+                        url_data: req.session.menu_array,
                         Quiz: quiz_Array,
                         msg: req.session.error,
                         quiz_data: quiz_data,
@@ -1535,6 +1543,7 @@ exports.resultQuiz_list = function (req, res) {
 
 
                     res.render('resultQuiz_list', {
+                        url_data: req.session.menu_array,
                         ResultQuiz: all_data,
                         msg: req.session.error,
                         moment: moment,
@@ -1613,6 +1622,7 @@ exports.typequiz_list = function (req, res) {
 
 
                         res.render('typequiz_list', {
+                            url_data: req.session.menu_array,
                             typequiz: all_data,
                             msg: req.session.error,
                             moment: moment,
@@ -3636,6 +3646,7 @@ exports.menu_list = function (req, res) {
                 project
             ]).then((menu) => {
                 res.render('menu_list', {
+                    url_data: req.session.menu_array,
                     menu: menu,
                     msg: req.session.error,
                     moment: moment,

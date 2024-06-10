@@ -59,6 +59,17 @@
                     <img class="card-img-top " style="width: 50px; margin-left: 55px;" src="user.png" class="rounded-circle" alt="Card image">
                     <h1 class="card-title mt-3" style="font-size: 20px;"><strong>Total Admin</strong></h1>
                     <br>
+                    <%if(Totaladmin.length>0){%>
+                    
+                      <strong class="card-text mt-5" style="margin-top: 100px; margin-left: 90px; text-align: left; font-size: 25px;"><%= Totaladmin[0].Total_Admin %></strong>
+
+                    <%}else{%>
+                     
+
+                      <strong class="card-text mt-5" style="margin-top: 100px; margin-left: 90px; text-align: left; font-size: 25px;">0</strong>
+
+                    <%}%>
+                    
                     
                     
                 </div>
